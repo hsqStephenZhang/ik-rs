@@ -35,7 +35,7 @@ impl<T: PartialOrd> Node<T> {
         }
     }
 
-    pub fn into_val(self: Box<Self>) -> T {
+    pub fn into_val(self) -> T {
         self.val
     }
 }
@@ -292,9 +292,15 @@ impl<T: PartialOrd> OrderedLinkedList<T> {
         }
 
         if idx == 0 {
-            return Ok(self.push_front(data));
+            return {
+                self.push_front(data);
+                Ok(())
+            };
         } else if idx == len {
-            return Ok(self.push_back(data));
+            return {
+                self.push_back(data);
+                Ok(())
+            };
         }
 
         unsafe {
@@ -657,11 +663,11 @@ mod test {
 
         let cur = list.peek_front_mut();
         assert_eq!(cur, Some(&mut String::from("abc")));
-        cur.map(|x| x.push(' '));
+        if let Some(x) = cur { x.push(' ') }
 
         let cur = list.peek_back_mut();
         assert_eq!(cur, Some(&mut String::from("hij")));
-        cur.map(|x| x.push(' '));
+        if let Some(x) = cur { x.push(' ') }
 
         assert_eq!(list.peek_front(), Some(&String::from("abc ")));
         assert_eq!(list.peek_back(), Some(&String::from("hij ")));
@@ -695,7 +701,7 @@ mod test {
 
         print!("before change: ");
         list1.traverse();
-        list1.iter_mut().for_each(|x| *x = *x - 1);
+        list1.iter_mut().for_each(|x| *x -= 1);
         print!("after change: ");
         list1.traverse();
 

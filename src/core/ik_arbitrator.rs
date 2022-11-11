@@ -7,6 +7,7 @@ use crate::core::lexeme_path::LexemePath;
 use crate::core::ordered_linked_list::{Node, OrderedLinkedList};
 
 // IK分词歧义裁决器
+#[derive(Clone, Default)]
 pub struct IKArbitrator {}
 
 impl IKArbitrator {
@@ -94,7 +95,7 @@ impl IKArbitrator {
                 break;
             }
         }
-        return a;
+        a
     }
 
     // 向前遍历，添加词元，构造一个无歧义词元组合
@@ -115,7 +116,7 @@ impl IKArbitrator {
             }
             cur = cur.as_ref().unwrap().as_ref().next.as_ref();
         }
-        return conflict_stack;
+        conflict_stack
     }
 
     // 回滚词元链，直到它能够接受指定的词元

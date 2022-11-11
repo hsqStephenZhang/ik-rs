@@ -4,21 +4,14 @@ use std::fmt::{Display, Formatter};
 use crate::dict::hit::Hit;
 
 #[derive(Debug)]
+#[derive(Default)]
 pub struct TrieNode {
     value: Option<char>,
     final_state: bool,
     child_nodes: HashMap<char, TrieNode>,
 }
 
-impl Default for TrieNode {
-    fn default() -> Self {
-        TrieNode {
-            value: None,
-            final_state: false,
-            child_nodes: HashMap::new(),
-        }
-    }
-}
+
 
 impl Display for TrieNode {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
@@ -42,7 +35,7 @@ impl TrieNode {
     }
 
     pub fn has_childs(&self) -> bool {
-        self.child_nodes.len() > 0
+        !self.child_nodes.is_empty()
     }
 
     pub fn is_final_state(&self) -> bool {
@@ -60,33 +53,29 @@ impl TrieNode {
     pub fn exist(&self, string_val: &str) -> bool {
         let mut current_node = self;
         let char_list: Vec<char> = string_val.chars().collect();
-        for counter in 0..char_list.len() {
-            if !current_node.child_nodes.contains_key(&char_list[counter]) {
+        for c in &char_list {
+            if !current_node.child_nodes.contains_key(c) {
                 return false;
             }
-            current_node = current_node.child_nodes.get(&char_list[counter]).unwrap();
+            current_node = current_node.child_nodes.get(c).unwrap();
         }
-        if current_node.final_state == true {
-            return true;
-        } else {
-            return false;
-        }
+        current_node.final_state
     }
 
     pub fn delete(&mut self, string_val: &str) -> bool {
         let mut current_node = self;
         let char_list: Vec<char> = string_val.chars().collect();
-        for counter in 0..char_list.len() {
-            if !current_node.child_nodes.contains_key(&char_list[counter]) {
+        for c in &char_list {
+            if !current_node.child_nodes.contains_key(c) {
                 return true;
             }
             current_node = current_node
                 .child_nodes
-                .get_mut(&char_list[counter])
+                .get_mut(c)
                 .unwrap();
         }
         current_node.final_state = false;
-        return true;
+        true
     }
 
     pub fn insert(&mut self, string_val: &str) {
@@ -113,8 +102,8 @@ impl TrieNode {
         let char_list: Vec<char> = string_val.chars().collect();
         if offset + length <= char_list.len() {
             let mut end = offset;
-            for counter in offset..offset + length {
-                if !current_node.child_nodes.contains_key(&char_list[counter]) {
+            for (counter, c) in char_list.iter().enumerate().skip(offset).take(length) {
+                if !current_node.child_nodes.contains_key(c) {
                     break;
                 }
                 if current_node.final_state {
@@ -127,7 +116,7 @@ impl TrieNode {
                     }
                     hits.push(hit);
                 }
-                current_node = current_node.child_nodes.get(&char_list[counter]).unwrap();
+                current_node = current_node.child_nodes.get(c).unwrap();
                 end = counter;
             }
             if current_node.value.is_some() {
@@ -170,9 +159,7 @@ impl Trie {
 
     pub fn match_word(&mut self, string_val: &str) -> Vec<Hit> {
         let root_node = &mut self.root;
-        let v: Vec<char> = string_val.chars().collect();
-        let len = v.len();
-        root_node.match_with_offset(string_val, 0, len)
+        root_node.match_with_offset(string_val, 0, string_val.len())
     }
 
     pub fn match_word_with_offset(

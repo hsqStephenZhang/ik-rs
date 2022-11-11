@@ -15,7 +15,7 @@ mod tests {
             .set_stored();
         schema_builder.add_text_field("title", text_options);
         let schema = schema_builder.build();
-        let index = Index::create_in_ram(schema.clone());
+        let index = Index::create_in_ram(schema);
         index
             .tokenizers()
             .register("ik-index", IkTokenizer::new(TokenMode::INDEX));

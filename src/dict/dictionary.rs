@@ -42,14 +42,14 @@ impl Dictionary {
     }
 
     // 批量加载新词条
-    pub fn add_words(&mut self, words: Vec<&str>) -> () {
+    pub fn add_words(&mut self, words: Vec<&str>) {
         for word in words {
             self.main_dict.insert(word);
         }
     }
 
     // 批量移除（屏蔽）词条
-    pub fn disable_words(&mut self, words: Vec<&str>) -> () {
+    pub fn disable_words(&mut self, words: Vec<&str>) {
         for word in words {
             self.main_dict.delete(word);
         }
@@ -91,7 +91,7 @@ impl Dictionary {
                 return true;
             }
         }
-        return false;
+        false
     }
 
     // 加载主词典及扩展词典
@@ -104,7 +104,7 @@ impl Dictionary {
         for line in reader.lines() {
             match line {
                 Ok(word) => {
-                    self.main_dict.insert(&word.trim());
+                    self.main_dict.insert(word.trim());
                     total += 1;
                 }
                 Err(e) => {
@@ -127,7 +127,7 @@ impl Dictionary {
             for line in reader.lines() {
                 match line {
                     Ok(word) => {
-                        self.main_dict.insert(&word.trim());
+                        self.main_dict.insert(word.trim());
                         total += 1;
                     }
                     Err(e) => {
@@ -149,7 +149,7 @@ impl Dictionary {
             .unwrap()
             .as_ref()
             .get_ext_stop_word_dictionaries();
-        let mut total = 0 as usize;
+        let mut total = 0_usize;
         for stop_file in ext_stop_word_dict_files {
             println!("{}", stop_file);
             let file = File::open(stop_file).expect("open error");
@@ -157,7 +157,7 @@ impl Dictionary {
             for line in reader.lines() {
                 match line {
                     Ok(word) => {
-                        self.stop_word_dict.insert(&word.trim());
+                        self.stop_word_dict.insert(word.trim());
                         total += 1;
                     }
                     Err(e) => {
@@ -181,11 +181,11 @@ impl Dictionary {
             .get_quantifier_dictionary();
         let file = File::open(&file_path[..]).expect("open error");
         let reader = BufReader::new(file);
-        let mut total = 0 as usize;
+        let mut total = 0_usize;
         for line in reader.lines() {
             match line {
                 Ok(word) => {
-                    self.quantifier_dict.insert(&word.trim());
+                    self.quantifier_dict.insert(word.trim());
                     total += 1;
                 }
                 Err(e) => {
@@ -206,16 +206,14 @@ mod test {
         let mut dictionary = Dictionary::default();
         let initialized = dictionary.load();
         assert_eq!(true, initialized);
-        let mut words = Vec::new();
-        words.push("abcd");
-        words.push("blues");
+        let words = vec!["abcd", "blues"];
         dictionary.add_words(words);
 
         let vec_exist = vec!["一夕之间", "ab", "万般皆下品唯有读书高", "张三", "张"];
         println!("{}", "一夕之间".to_string().len());
         for word in vec_exist {
             let hits = dictionary.match_in_main_dict(word);
-            assert_eq!(true, hits.len() > 0);
+            assert_eq!(true, !hits.is_empty());
         }
     }
 }

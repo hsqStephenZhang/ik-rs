@@ -26,7 +26,13 @@ impl Segmenter for CnQuantifierSegmenter {
         new_lexemes
     }
     fn name(&self) -> &str {
-        return SEGMENTER_NAME;
+        SEGMENTER_NAME
+    }
+}
+
+impl Default for CnQuantifierSegmenter{
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -135,6 +141,6 @@ impl CnQuantifierSegmenter {
         if self.n_start == -1 || self.n_end == -1 {
             return false;
         }
-        return true;
+        true
     }
 }

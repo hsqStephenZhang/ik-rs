@@ -11,9 +11,9 @@ pub enum CharType {
 
 // identify CharType Of char
 pub fn char_type_of(input: char) -> CharType {
-    if input >= '0' && input <= '9' {
+    if ('0'..='9').contains(&input) {
         return CharType::ARABIC;
-    } else if (input >= 'a' && input <= 'z') || (input >= 'A' && input <= 'Z') {
+    } else if ('a'..='z').contains(&input) || ('A'..='Z').contains(&input) {
         return CharType::ENGLISH;
     } else {
         let ub = unicode_blocks::find_unicode_block(input).unwrap();
@@ -36,7 +36,7 @@ pub fn char_type_of(input: char) -> CharType {
             return CharType::OtherCjk;
         }
     }
-    return CharType::USELESS;
+    CharType::USELESS
 }
 
 // full char -> half char && lowercase
@@ -44,13 +44,13 @@ pub fn regularize(input: char) -> char {
     let mut input_code = input as u32;
     if input_code == 12288 {
         input_code -= 12256; // 空格
-    } else if input_code >= 65281 && input_code <= 65374 {
+    } else if (65281..=65374).contains(&input_code) {
         input_code -= 65248; // 全角字符
     } else if input_code >= 'A' as u32 && input_code <= 'Z' as u32 {
         input_code += 32; // lowercase
     }
-    let to_char = char::from_u32(input_code).unwrap();
-    to_char
+    
+    char::from_u32(input_code).unwrap()
 }
 
 pub fn regularize_str(input: &str) -> String {

@@ -19,14 +19,14 @@ impl Hit {
         }
     }
     pub fn set_match(&mut self) {
-        self.hit_state = self.hit_state | MATCH;
+        self.hit_state |= MATCH;
     }
     pub fn is_match(&self) -> bool {
         (self.hit_state & MATCH) > 0
     }
 
     pub fn set_prefix(&mut self) {
-        self.hit_state = self.hit_state | PREFIX;
+        self.hit_state |= PREFIX;
     }
     pub fn is_prefix(&self) -> bool {
         (self.hit_state & PREFIX) > 0

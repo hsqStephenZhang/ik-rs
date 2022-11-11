@@ -46,7 +46,7 @@ impl Segmenter for LetterSegmenter {
         new_lexemes
     }
     fn name(&self) -> &str {
-        return SEGMENTER_NAME;
+        SEGMENTER_NAME
     }
 }
 

@@ -18,7 +18,7 @@ fn trie_match() {
 }
 
 fn trie_benchmark(c: &mut Criterion) {
-    c.bench_function("trie match", |b| b.iter(|| trie_match()));
+    c.bench_function("trie match", |b| b.iter(trie_match));
 }
 
 criterion_group!(benches, trie_benchmark);

@@ -16,6 +16,12 @@ pub struct LexemePath {
     pub lexeme_list: OrderedLinkedList<Lexeme>,
 }
 
+impl Default for LexemePath {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl LexemePath {
     pub fn new() -> Self {
         LexemePath {
@@ -35,8 +41,8 @@ impl LexemePath {
             self.path_begin = lexeme.get_begin() as i32;
             self.path_end = (lexeme.get_begin() + lexeme.get_length()) as i32;
             self.payload_length += lexeme.get_length();
-            return true;
-        } else if self.check_cross(&lexeme) {
+            true
+        } else if self.check_cross(lexeme) {
             self.lexeme_list
                 .insert(lexeme.clone())
                 .expect("add cross lexeme error!");
@@ -59,7 +65,7 @@ impl LexemePath {
             self.path_begin = lexeme.get_begin() as i32;
             self.path_end = (lexeme.get_begin() + lexeme.get_length()) as i32;
             self.payload_length += lexeme.get_length();
-            return true;
+            true
         } else if self.check_cross(lexeme) {
             return false;
         } else {
@@ -89,32 +95,32 @@ impl LexemePath {
             self.path_end = (new_tail.as_ref().unwrap().get_begin() as i32)
                 + (new_tail.as_ref().unwrap().get_length() as i32);
         }
-        return tail;
+        tail
     }
 
     // 检测词元位置交叉（有歧义的切分）
     pub fn check_cross(&self, lexeme: &Lexeme) -> bool {
         let l_begin = lexeme.get_begin() as i32;
         let l_length = lexeme.get_length() as i32;
-        let cross = (l_begin >= self.path_begin && l_begin < self.path_end)
-            || (self.path_begin >= l_begin && self.path_begin < l_begin + l_length);
-        cross
+
+        (l_begin >= self.path_begin && l_begin < self.path_end)
+            || (self.path_begin >= l_begin && self.path_begin < l_begin + l_length)
     }
 
     pub fn get_path_begin(&self) -> i32 {
-        return self.path_begin;
+        self.path_begin
     }
 
     pub fn get_path_end(&self) -> i32 {
-        return self.path_end;
+        self.path_end
     }
 
     pub fn get_payload_length(&self) -> usize {
-        return self.payload_length;
+        self.payload_length
     }
 
     pub fn get_path_length(&self) -> usize {
-        return (self.path_end - self.path_begin) as usize;
+        (self.path_end - self.path_begin) as usize
     }
 
     // X权重（词元长度积）
@@ -123,7 +129,7 @@ impl LexemePath {
         for lexeme in self.lexeme_list.iter() {
             product *= lexeme.get_length();
         }
-        return product as i32;
+        product as i32
     }
 
     // 词元位置权重
@@ -134,7 +140,7 @@ impl LexemePath {
             p += 1;
             p_weight += p * lexeme.get_length();
         }
-        return p_weight as i32;
+        p_weight as i32
     }
 
     pub fn size(&self) -> usize {
@@ -172,7 +178,7 @@ impl Clone for LexemePath {
                 .insert(lexeme.clone())
                 .expect("clone insert error");
         }
-        return the_copy;
+        the_copy
     }
 }
 
@@ -189,38 +195,28 @@ impl PartialOrd<Self> for LexemePath {
             return Some(Ordering::Less);
         } else if self.payload_length < o.payload_length {
             return Some(Ordering::Greater);
-        } else {
-            if self.size() < o.size() {
-                return Some(Ordering::Less);
-            } else if self.size() > o.size() {
-                return Some(Ordering::Greater);
-            } else {
-                if self.get_path_length() > o.get_path_length() {
-                    return Some(Ordering::Less);
-                } else if self.get_path_length() < o.get_path_length() {
-                    return Some(Ordering::Greater);
-                } else {
-                    if self.path_end > o.path_end {
-                        return Some(Ordering::Less);
-                    } else if self.path_end < o.path_end {
-                        return Some(Ordering::Greater);
-                    } else {
-                        if self.get_xweight() > o.get_xweight() {
-                            return Some(Ordering::Less);
-                        } else if self.get_xweight() < o.get_xweight() {
-                            return Some(Ordering::Greater);
-                        } else {
-                            if self.get_pweight() > o.get_pweight() {
-                                return Some(Ordering::Less);
-                            } else if self.get_pweight() < o.get_pweight() {
-                                return Some(Ordering::Greater);
-                            }
-                        }
-                    }
-                }
-            }
+        } else if self.size() < o.size() {
+            return Some(Ordering::Less);
+        } else if self.size() > o.size() {
+            return Some(Ordering::Greater);
+        } else if self.get_path_length() > o.get_path_length() {
+            return Some(Ordering::Less);
+        } else if self.get_path_length() < o.get_path_length() {
+            return Some(Ordering::Greater);
+        } else if self.path_end > o.path_end {
+            return Some(Ordering::Less);
+        } else if self.path_end < o.path_end {
+            return Some(Ordering::Greater);
+        } else if self.get_xweight() > o.get_xweight() {
+            return Some(Ordering::Less);
+        } else if self.get_xweight() < o.get_xweight() {
+            return Some(Ordering::Greater);
+        } else if self.get_pweight() > o.get_pweight() {
+            return Some(Ordering::Less);
+        } else if self.get_pweight() < o.get_pweight() {
+            return Some(Ordering::Greater);
         }
-        return Some(Ordering::Equal);
+        Some(Ordering::Equal)
     }
 }
 
@@ -239,9 +235,9 @@ impl PartialEq for LexemePath {
                     return false;
                 }
             }
-            return true;
+            true
         } else {
-            return false;
+            false
         }
     }
 }

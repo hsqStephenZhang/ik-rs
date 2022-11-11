@@ -25,17 +25,23 @@ pub struct IKSegmenter {
 unsafe impl Sync for IKSegmenter {}
 unsafe impl Send for IKSegmenter {}
 
+impl Default for IKSegmenter{
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl IKSegmenter {
     pub fn new() -> Self {
-        let ik = IKSegmenter {
+        
+        IKSegmenter {
             arbitrator: IKArbitrator::new(),
             segmenters: vec![
                 Box::new(LetterSegmenter::new()),
                 Box::new(CnQuantifierSegmenter::new()),
                 Box::new(CJKSegmenter::new()),
             ],
-        };
-        ik
+        }
     }
 
     pub fn tokenize(&mut self, text: &str, mode: TokenMode) -> Vec<Lexeme> {
@@ -196,7 +202,7 @@ mod test {
             for token in tokens {
                 println!("{:?}", token);
             }
-            println!("{}", "----------------------")
+            println!("----------------------")
         }
     }
 
@@ -209,7 +215,7 @@ mod test {
             for token in tokens {
                 println!("{:?}", token);
             }
-            println!("{}", "----------------------")
+            println!("----------------------")
         }
     }
 

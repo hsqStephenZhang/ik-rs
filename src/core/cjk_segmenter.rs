@@ -6,7 +6,7 @@ use crate::dict::dictionary::GLOBAL_DICT;
 const SEGMENTER_NAME: &str = "CJK_SEGMENTER";
 
 // 中文-日韩文子分词器
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct CJKSegmenter {}
 
 impl Segmenter for CJKSegmenter {
@@ -36,7 +36,7 @@ impl Segmenter for CJKSegmenter {
     }
 
     fn name(&self) -> &str {
-        return SEGMENTER_NAME;
+        SEGMENTER_NAME
     }
 }
 

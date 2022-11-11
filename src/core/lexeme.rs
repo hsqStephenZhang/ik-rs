@@ -53,7 +53,7 @@ impl PartialOrd for Lexeme {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         // 起始位置优先
         if self.begin < other.begin {
-            return Some(Ordering::Less);
+            Some(Ordering::Less)
         } else if self.begin == other.begin {
             // 词元长度优先
             if self.length > other.length {
@@ -136,6 +136,6 @@ impl Lexeme {
             self.lexeme_type = lexeme_type;
             return true;
         }
-        return false;
+        false
     }
 }

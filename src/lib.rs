@@ -1,5 +1,8 @@
+#[allow(dead_code)]
 pub mod config;
+#[allow(dead_code)]
 pub mod core;
+#[allow(dead_code)]
 pub mod dict;
 
 use std::sync::Mutex;
@@ -27,7 +30,7 @@ pub struct IkTokenStream {
 impl TokenStream for IkTokenStream {
     fn advance(&mut self) -> bool {
         if self.index < self.tokens.len() {
-            self.index = self.index + 1;
+            self.index += 1;
             true
         } else {
             false

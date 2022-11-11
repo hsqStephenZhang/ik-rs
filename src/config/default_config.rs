@@ -27,9 +27,7 @@ unsafe impl Sync for DefaultConfig {}
 unsafe impl Send for DefaultConfig {}
 
 impl DefaultConfig {
-    pub fn new() -> DefaultConfig {
-        let root_path = env!("CARGO_MANIFEST_DIR");
-        let conf_file_path = Path::new(root_path).join(IK_CONFIG_NAME);
+    pub fn new<P: AsRef<Path>>(conf_file_path: P) -> DefaultConfig {
         let file = File::open(conf_file_path).expect("open file error!");
         let mut reader = BufReader::new(file);
         let mut yaml_str: String = "".to_string();
@@ -46,14 +44,14 @@ impl DefaultConfig {
 impl Configuration for DefaultConfig {
     fn get_main_dictionary(&self) -> String {
         let mut root_path = env!("CARGO_MANIFEST_DIR").to_string();
-        root_path.push_str("/");
+        root_path.push('/');
         root_path.push_str(self.main_dict.as_str());
         root_path
     }
 
     fn get_quantifier_dictionary(&self) -> String {
         let mut root_path = env!("CARGO_MANIFEST_DIR").to_string();
-        root_path.push_str("/");
+        root_path.push('/');
         root_path.push_str(self.quantifier_dict.as_str());
         root_path
     }
@@ -62,7 +60,7 @@ impl Configuration for DefaultConfig {
         let mut dicts = Vec::new();
         for dict in &self.ext_dicts {
             let mut root_path = env!("CARGO_MANIFEST_DIR").to_string();
-            root_path.push_str("/");
+            root_path.push('/');
             root_path.push_str(dict);
             dicts.push(root_path);
         }
@@ -72,12 +70,12 @@ impl Configuration for DefaultConfig {
     fn get_ext_stop_word_dictionaries(&self) -> Vec<String> {
         let mut dicts = Vec::new();
         let mut stop_word_full = env!("CARGO_MANIFEST_DIR").to_string();
-        stop_word_full.push_str("/");
+        stop_word_full.push('/');
         stop_word_full.push_str(&self.stop_word_dict);
         dicts.push(stop_word_full);
         for dict in &self.ext_stop_word_dicts {
             let mut root_path = env!("CARGO_MANIFEST_DIR").to_string();
-            root_path.push_str("/");
+            root_path.push('/');
             root_path.push_str(dict);
             dicts.push(root_path);
         }
@@ -91,7 +89,9 @@ mod test {
 
     #[test]
     pub fn test_config() {
-        let config = DefaultConfig::new();
+        let root_path = env!("CARGO_MANIFEST_DIR");
+        let conf_file_path = Path::new(root_path).join(IK_CONFIG_NAME);
+        let config = DefaultConfig::new(conf_file_path);
         println!("{:?}", config);
         println!("{}", config.get_main_dictionary());
         println!("{}", config.get_quantifier_dictionary());
