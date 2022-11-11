@@ -1,10 +1,9 @@
-use crate::core::char_util::char_type_of;
-use crate::core::char_util::CharType;
+use std::collections::HashSet;
+
+use crate::core::char_util::{char_type_of, utf8_len, CharType};
 use crate::core::lexeme::{Lexeme, LexemeType};
 use crate::core::segmentor::Segmenter;
 use crate::dict::dictionary::GLOBAL_DICT;
-use std::collections::HashSet;
-use crate::core::char_util::utf8_len;
 
 const SEGMENTER_NAME: &str = "QUAN_SEGMENTER";
 
@@ -18,9 +17,9 @@ pub struct CnQuantifierSegmenter {
 impl Segmenter for CnQuantifierSegmenter {
     fn analyze(&mut self, input: &str) -> Vec<Lexeme> {
         let mut new_lexemes: Vec<Lexeme> = Vec::new();
-        //处理中文数词
+        // 处理中文数词
         let mut a = self.process_cnumber(input);
-        //处理中文量词
+        // 处理中文量词
         let mut b = self.process_count(input);
         new_lexemes.append(&mut a);
         new_lexemes.append(&mut b);
@@ -52,21 +51,21 @@ impl CnQuantifierSegmenter {
             let curr_char = input.char_indices().nth(cursor).unwrap().1;
             let curr_char_type = char_type_of(curr_char);
             if self.n_start == -1 && self.n_end == -1 {
-                //初始状态
+                // 初始状态
                 if CharType::CHINESE == curr_char_type && self.chn_number_chars.contains(&curr_char)
                 {
-                    //记录数词的起始、结束位置
+                    // 记录数词的起始、结束位置
                     self.n_start = cursor as i32;
                     self.n_end = cursor as i32;
                 }
             } else {
-                //正在处理状态
+                // 正在处理状态
                 if CharType::CHINESE == curr_char_type && self.chn_number_chars.contains(&curr_char)
                 {
-                    //记录数词的结束位置
+                    // 记录数词的结束位置
                     self.n_end = cursor as i32;
                 } else {
-                    //输出数词
+                    // 输出数词
                     let new_lexeme = Lexeme::new(
                         0,
                         self.n_start as usize,
@@ -74,15 +73,15 @@ impl CnQuantifierSegmenter {
                         LexemeType::CNUM,
                     );
                     new_lexemes.push(new_lexeme);
-                    //重置头尾指针
+                    // 重置头尾指针
                     self.n_start = -1;
                     self.n_end = -1;
                 }
             }
 
-            //缓冲区已经用完，还有尚未输出的数词
+            // 缓冲区已经用完，还有尚未输出的数词
             if self.n_start != -1 && self.n_end != -1 {
-                //输出数词
+                // 输出数词
                 let new_lexeme = Lexeme::new(
                     0,
                     self.n_start as usize,
@@ -90,7 +89,7 @@ impl CnQuantifierSegmenter {
                     LexemeType::CNUM,
                 );
                 new_lexemes.push(new_lexeme);
-                //重置头尾指针
+                // 重置头尾指针
                 self.n_start = -1;
                 self.n_end = -1;
             }
@@ -115,7 +114,7 @@ impl CnQuantifierSegmenter {
                     );
                     for hit in hit_options.iter() {
                         if hit.is_match() {
-                            //输出当前的词
+                            // 输出当前的词
                             let new_lexeme = Lexeme::new(
                                 0,
                                 hit.begin,

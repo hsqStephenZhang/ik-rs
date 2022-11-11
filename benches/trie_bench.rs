@@ -1,9 +1,8 @@
-
 use criterion::*;
 use ik_rs::dict::trie::Trie;
 
 fn trie_build() -> Trie {
-    let mut trie = Trie::new();
+    let mut trie = Trie::default();
     trie.insert("Test");
     trie.insert("Tea");
     trie.insert("Background");
@@ -13,15 +12,13 @@ fn trie_build() -> Trie {
 }
 
 fn trie_match() {
-    let mut  trie = trie_build();
+    let mut trie = trie_build();
     trie.match_word("Back");
     trie.match_word("Tea");
 }
 
 fn trie_benchmark(c: &mut Criterion) {
-    c.bench_function("trie match", |b| {
-        b.iter(||trie_match())
-    });
+    c.bench_function("trie match", |b| b.iter(|| trie_match()));
 }
 
 criterion_group!(benches, trie_benchmark);

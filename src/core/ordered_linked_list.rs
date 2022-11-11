@@ -2,9 +2,8 @@ use std::cmp::PartialOrd;
 use std::error::Error;
 use std::fmt::{Debug, Display, Formatter};
 use std::marker::PhantomData;
-use std::mem;
 use std::ptr::NonNull;
-use std::{error, fmt};
+use std::{error, fmt, mem};
 
 #[derive(Debug, Clone)]
 pub struct IndexOutOfRangeError;
@@ -344,9 +343,7 @@ impl<T: PartialOrd> OrderedLinkedList<T> {
     }
 
     pub fn contains(&self, elem: &T) -> bool
-    where
-        T: PartialEq<T>,
-    {
+    where T: PartialEq<T> {
         self.iter().any(|x| x == elem)
     }
 

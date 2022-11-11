@@ -21,7 +21,7 @@ pub fn char_type_of(input: char) -> CharType {
             || ub == unicode_blocks::CJK_COMPATIBILITY_IDEOGRAPHS
             || ub == unicode_blocks::CJK_UNIFIED_IDEOGRAPHS_EXTENSION_A
         {
-            //目前已知的中文字符UTF-8集合
+            // 目前已知的中文字符UTF-8集合
             return CharType::CHINESE;
         } else if ub == unicode_blocks::HALFWIDTH_AND_FULLWIDTH_FORMS //全角数字字符和日韩字符
                     //韩文字符集
@@ -43,7 +43,7 @@ pub fn char_type_of(input: char) -> CharType {
 pub fn regularize(input: char) -> char {
     let mut input_code = input as u32;
     if input_code == 12288 {
-        input_code -= 12256;        // 空格
+        input_code -= 12256; // 空格
     } else if input_code >= 65281 && input_code <= 65374 {
         input_code -= 65248; // 全角字符
     } else if input_code >= 'A' as u32 && input_code <= 'Z' as u32 {

@@ -1,8 +1,9 @@
-use crate::core::lexeme::Lexeme;
-use crate::core::ordered_linked_list::{Node, OrderedLinkedList};
 use std::cmp::Ordering;
 use std::fmt::{Display, Formatter};
 use std::ptr::NonNull;
+
+use crate::core::lexeme::Lexeme;
+use crate::core::ordered_linked_list::{Node, OrderedLinkedList};
 
 // Lexeme链（路径）
 pub struct LexemePath {
@@ -75,9 +76,7 @@ impl LexemePath {
         }
     }
 
-    /**
-     * 移除尾部的Lexeme
-     */
+    /// 移除尾部的Lexeme
     pub fn remove_tail(&mut self) -> Option<Lexeme> {
         let tail = self.lexeme_list.pop_back();
         if self.lexeme_list.is_empty() {
@@ -87,8 +86,8 @@ impl LexemePath {
         } else {
             self.payload_length -= tail.as_ref().unwrap().get_length();
             let new_tail = self.lexeme_list.peek_back();
-            self.path_end =
-                (new_tail.as_ref().unwrap().get_begin() as i32) + (new_tail.as_ref().unwrap().get_length() as i32);
+            self.path_end = (new_tail.as_ref().unwrap().get_begin() as i32)
+                + (new_tail.as_ref().unwrap().get_length() as i32);
         }
         return tail;
     }
@@ -185,7 +184,7 @@ impl Ord for LexemePath {
 
 impl PartialOrd<Self> for LexemePath {
     fn partial_cmp(&self, o: &Self) -> Option<Ordering> {
-        //比较有效文本长度
+        // 比较有效文本长度
         if self.payload_length > o.payload_length {
             return Some(Ordering::Less);
         } else if self.payload_length < o.payload_length {

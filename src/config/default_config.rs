@@ -1,13 +1,15 @@
 extern crate serde;
 #[warn(unused_imports)]
 extern crate serde_yaml;
-use crate::config::configuration::Configuration;
-use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::{BufReader, Read};
 use std::marker::{Send, Sync};
 use std::path::Path;
 use std::vec::Vec;
+
+use serde::{Deserialize, Serialize};
+
+use crate::config::configuration::Configuration;
 
 // 分词器配置文件路径
 const IK_CONFIG_NAME: &str = "ik.yml";
@@ -40,9 +42,7 @@ impl DefaultConfig {
     }
 }
 
-/**
- * Configuration 默认实现
- */
+/// Configuration 默认实现
 impl Configuration for DefaultConfig {
     fn get_main_dictionary(&self) -> String {
         let mut root_path = env!("CARGO_MANIFEST_DIR").to_string();

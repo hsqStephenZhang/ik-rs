@@ -1,9 +1,8 @@
-
 mod tests {
     use ik_rs::core::ik_segmenter::TokenMode;
     use ik_rs::IkTokenizer;
-    use tantivy::Index;
     use tantivy::schema::{IndexRecordOption, Schema, TextFieldIndexing, TextOptions};
+    use tantivy::Index;
 
     #[test]
     fn it_works() {

@@ -1,12 +1,23 @@
-use crate::dict::hit::Hit;
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
+
+use crate::dict::hit::Hit;
 
 #[derive(Debug)]
 pub struct TrieNode {
     value: Option<char>,
     final_state: bool,
     child_nodes: HashMap<char, TrieNode>,
+}
+
+impl Default for TrieNode {
+    fn default() -> Self {
+        TrieNode {
+            value: None,
+            final_state: false,
+            child_nodes: HashMap::new(),
+        }
+    }
 }
 
 impl Display for TrieNode {
@@ -26,14 +37,6 @@ impl TrieNode {
         TrieNode {
             value: Some(c),
             final_state,
-            child_nodes: HashMap::new(),
-        }
-    }
-
-    pub fn new_root() -> TrieNode {
-        TrieNode {
-            value: None,
-            final_state: false,
             child_nodes: HashMap::new(),
         }
     }
@@ -144,18 +147,12 @@ impl TrieNode {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Trie {
     root: TrieNode,
 }
 
 impl Trie {
-    pub fn new() -> Self {
-        Trie {
-            root: TrieNode::new_root(),
-        }
-    }
-
     pub fn insert(&mut self, string_val: &str) {
         let current_node = &mut self.root;
         current_node.insert(string_val)
@@ -194,7 +191,7 @@ mod test {
     use super::*;
     #[test]
     fn trie_exist() {
-        let mut trie = Trie::new();
+        let mut trie = Trie::default();
         trie.insert("Test");
         trie.insert("Tea");
         trie.insert("Background");
@@ -211,7 +208,7 @@ mod test {
 
     #[test]
     fn trie_search() {
-        let mut trie = Trie::new();
+        let mut trie = Trie::default();
         trie.insert("Test");
         trie.insert("Tea");
         trie.insert("Background");
