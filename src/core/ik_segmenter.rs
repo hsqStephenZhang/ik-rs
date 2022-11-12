@@ -25,7 +25,7 @@ pub struct IKSegmenter {
 unsafe impl Sync for IKSegmenter {}
 unsafe impl Send for IKSegmenter {}
 
-impl Default for IKSegmenter{
+impl Default for IKSegmenter {
     fn default() -> Self {
         Self::new()
     }
@@ -33,7 +33,6 @@ impl Default for IKSegmenter{
 
 impl IKSegmenter {
     pub fn new() -> Self {
-        
         IKSegmenter {
             arbitrator: IKArbitrator::new(),
             segmenters: vec![

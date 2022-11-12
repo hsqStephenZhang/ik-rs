@@ -1,5 +1,4 @@
 extern crate serde;
-#[warn(unused_imports)]
 extern crate serde_yaml;
 use std::fs::File;
 use std::io::{BufReader, Read};

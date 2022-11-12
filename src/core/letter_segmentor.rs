@@ -50,6 +50,12 @@ impl Segmenter for LetterSegmenter {
     }
 }
 
+impl Default for LetterSegmenter {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl LetterSegmenter {
     pub fn new() -> Self {
         LetterSegmenter {
@@ -79,10 +85,9 @@ impl LetterSegmenter {
                 }
             } else {
                 // 当前的分词器正在处理字符
-                if CharType::ARABIC == curr_char_type || CharType::ENGLISH == curr_char_type {
-                    // 记录下可能的结束位置
-                    self.end = cursor as i32;
-                } else if CharType::USELESS == curr_char_type && self.is_letter_connector(curr_char)
+                if CharType::ARABIC == curr_char_type
+                    || CharType::ENGLISH == curr_char_type
+                    || (CharType::USELESS == curr_char_type && self.is_letter_connector(curr_char))
                 {
                     // 记录下可能的结束位置
                     self.end = cursor as i32;

@@ -30,7 +30,7 @@ impl Segmenter for CnQuantifierSegmenter {
     }
 }
 
-impl Default for CnQuantifierSegmenter{
+impl Default for CnQuantifierSegmenter {
     fn default() -> Self {
         Self::new()
     }

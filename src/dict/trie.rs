@@ -3,15 +3,12 @@ use std::fmt::{Display, Formatter};
 
 use crate::dict::hit::Hit;
 
-#[derive(Debug)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct TrieNode {
     value: Option<char>,
     final_state: bool,
     child_nodes: HashMap<char, TrieNode>,
 }
-
-
 
 impl Display for TrieNode {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
@@ -69,10 +66,7 @@ impl TrieNode {
             if !current_node.child_nodes.contains_key(c) {
                 return true;
             }
-            current_node = current_node
-                .child_nodes
-                .get_mut(c)
-                .unwrap();
+            current_node = current_node.child_nodes.get_mut(c).unwrap();
         }
         current_node.final_state = false;
         true

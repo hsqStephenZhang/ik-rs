@@ -89,11 +89,8 @@ impl IKArbitrator {
         }
         // 返回集合中的最优方案
         let mut a = None;
-        if !path_options.is_empty() {
-            for o in path_options.iter() {
-                a = Some(o.clone());
-                break;
-            }
+        if let Some(o) = path_options.iter().next() {
+            a = Some(o.clone());
         }
         a
     }

@@ -49,7 +49,7 @@ pub fn regularize(input: char) -> char {
     } else if input_code >= 'A' as u32 && input_code <= 'Z' as u32 {
         input_code += 32; // lowercase
     }
-    
+
     char::from_u32(input_code).unwrap()
 }
 

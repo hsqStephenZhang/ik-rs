@@ -226,15 +226,15 @@ impl<T: PartialOrd> OrderedLinkedList<T> {
                 }
             }
             // Create Node
-            if before_node.is_some() {
+            if let Some(mut before_node) = before_node {
                 let mut spliced_node = Box::new(Node::new(data));
-                let after_node = before_node.unwrap().as_ref().next;
-                spliced_node.prev = before_node;
+                let after_node = before_node.as_ref().next;
+                spliced_node.prev = Some(before_node);
                 spliced_node.next = after_node;
                 let spliced_node = NonNull::new(Box::into_raw(spliced_node));
                 // Insert Node
-                before_node.unwrap().as_mut().next = spliced_node;
-                after_node.unwrap().as_mut().prev = spliced_node;
+                before_node.as_mut().next = spliced_node;
+                after_node.map(|mut n| n.as_mut().prev = spliced_node);
                 self.length += 1;
             }
         }
@@ -357,10 +357,6 @@ impl<T: PartialOrd> OrderedLinkedList<T> {
         *self = Self::new();
     }
 
-    pub fn into_iter(self) -> IntoIter<T> {
-        IntoIter { list: self }
-    }
-
     pub fn iter(&self) -> Iter<'_, T> {
         Iter {
             head: self.head,
@@ -480,6 +476,16 @@ impl<T: PartialOrd> Drop for OrderedLinkedList<T> {
         }
 
         // println!("LinkedList dropped!")
+    }
+}
+
+impl<T: PartialOrd> IntoIterator for OrderedLinkedList<T> {
+    type Item = T;
+
+    type IntoIter = IntoIter<T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        IntoIter { list: self }
     }
 }
 
@@ -663,11 +669,15 @@ mod test {
 
         let cur = list.peek_front_mut();
         assert_eq!(cur, Some(&mut String::from("abc")));
-        if let Some(x) = cur { x.push(' ') }
+        if let Some(x) = cur {
+            x.push(' ')
+        }
 
         let cur = list.peek_back_mut();
         assert_eq!(cur, Some(&mut String::from("hij")));
-        if let Some(x) = cur { x.push(' ') }
+        if let Some(x) = cur {
+            x.push(' ')
+        }
 
         assert_eq!(list.peek_front(), Some(&String::from("abc ")));
         assert_eq!(list.peek_back(), Some(&String::from("hij ")));
