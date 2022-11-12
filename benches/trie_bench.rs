@@ -3,18 +3,18 @@ use ik_rs::dict::trie::Trie;
 
 fn trie_build() -> Trie {
     let mut trie = Trie::default();
-    trie.insert("Test");
-    trie.insert("Tea");
-    trie.insert("Background");
-    trie.insert("Back");
-    trie.insert("Brown");
+    trie.insert("Test".chars());
+    trie.insert("Tea".chars());
+    trie.insert("Background".chars());
+    trie.insert("Back".chars());
+    trie.insert("Brown".chars());
     trie
 }
 
 fn trie_match() {
     let mut trie = trie_build();
-    trie.match_word("Back");
-    trie.match_word("Tea");
+    trie.match_word("Back".chars());
+    trie.match_word("Tea".chars());
 }
 
 fn trie_benchmark(c: &mut Criterion) {

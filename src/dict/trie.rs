@@ -47,53 +47,53 @@ impl TrieNode {
         self.child_nodes.insert(c, TrieNode::new(c, final_state));
     }
 
-    pub fn exist(&self, string_val: &str) -> bool {
+    pub fn exist<C: Iterator<Item = char>>(&self, chars: C) -> bool {
         let mut current_node = self;
-        let char_list: Vec<char> = string_val.chars().collect();
-        for c in &char_list {
-            if !current_node.child_nodes.contains_key(c) {
+        for c in chars {
+            if !current_node.child_nodes.contains_key(&c) {
                 return false;
             }
-            current_node = current_node.child_nodes.get(c).unwrap();
+            current_node = current_node.child_nodes.get(&c).unwrap();
         }
         current_node.final_state
     }
 
-    pub fn delete(&mut self, string_val: &str) -> bool {
+    pub fn delete<C: Iterator<Item = char>>(&mut self, chars: C) -> bool {
         let mut current_node = self;
-        let char_list: Vec<char> = string_val.chars().collect();
-        for c in &char_list {
-            if !current_node.child_nodes.contains_key(c) {
+        for c in chars {
+            if !current_node.child_nodes.contains_key(&c) {
                 return true;
             }
-            current_node = current_node.child_nodes.get_mut(c).unwrap();
+            current_node = current_node.child_nodes.get_mut(&c).unwrap();
         }
         current_node.final_state = false;
         true
     }
 
-    pub fn insert(&mut self, string_val: &str) {
+    pub fn insert<C: Iterator<Item = char>>(&mut self, chars: C) {
         let mut current_node = self;
-        let char_list: Vec<char> = string_val.chars().collect();
+        let char_list: Vec<char> = chars.collect();
         let mut final_state = false;
-        for counter in 0..char_list.len() {
-            if !current_node.child_nodes.contains_key(&char_list[counter]) {
-                if counter == char_list.len() - 1 {
+
+        for (idx, c) in char_list.iter().enumerate() {
+            if !current_node.child_nodes.contains_key(c) {
+                if idx == char_list.len() - 1 {
                     final_state = true;
                 }
-                current_node.add_child(char_list[counter], final_state);
+                current_node.add_child(*c, final_state);
             }
-            current_node = current_node
-                .child_nodes
-                .get_mut(&char_list[counter])
-                .unwrap();
+            current_node = current_node.child_nodes.get_mut(c).unwrap();
         }
     }
 
-    pub fn match_with_offset(&self, string_val: &str, offset: usize, length: usize) -> Vec<Hit> {
+    pub fn match_with_offset(
+        &self,
+        char_list: Vec<char>,
+        offset: usize,
+        length: usize,
+    ) -> Vec<Hit> {
         let mut hits = Vec::new();
         let mut current_node = self;
-        let char_list: Vec<char> = string_val.chars().collect();
         if offset + length <= char_list.len() {
             let mut end = offset;
             for (counter, c) in char_list.iter().enumerate().skip(offset).take(length) {
@@ -136,34 +136,37 @@ pub struct Trie {
 }
 
 impl Trie {
-    pub fn insert(&mut self, string_val: &str) {
+    pub fn insert<C: Iterator<Item = char>>(&mut self, chars: C) {
         let current_node = &mut self.root;
-        current_node.insert(string_val)
+        current_node.insert(chars)
     }
 
-    pub fn delete(&mut self, string_val: &str) -> bool {
+    pub fn delete<C: Iterator<Item = char>>(&mut self, chars: C) -> bool {
         let current_node = &mut self.root;
-        current_node.delete(string_val)
+        current_node.delete(chars)
     }
 
-    pub fn exist(&mut self, string_val: &str) -> bool {
+    pub fn exist<C: Iterator<Item = char>>(&mut self, chars: C) -> bool {
         let current_node = &mut self.root;
-        current_node.exist(string_val)
+        current_node.exist(chars)
     }
 
-    pub fn match_word(&mut self, string_val: &str) -> Vec<Hit> {
+    pub fn match_word<C: Iterator<Item = char>>(&mut self, chars: C) -> Vec<Hit> {
         let root_node = &mut self.root;
-        root_node.match_with_offset(string_val, 0, string_val.len())
+        let char_list: Vec<char> = chars.collect();
+        let length = char_list.len();
+        root_node.match_with_offset(char_list, 0, length)
     }
 
-    pub fn match_word_with_offset(
+    pub fn match_word_with_offset<C: Iterator<Item = char>>(
         &mut self,
-        string_val: &str,
+        chars: C,
         offset: usize,
         length: usize,
     ) -> Vec<Hit> {
         let root_node = &mut self.root;
-        root_node.match_with_offset(string_val, offset, length)
+        let char_list = chars.collect();
+        root_node.match_with_offset(char_list, offset, length)
     }
 }
 
@@ -173,32 +176,33 @@ mod test {
     #[test]
     fn trie_exist() {
         let mut trie = Trie::default();
-        trie.insert("Test");
-        trie.insert("Tea");
-        trie.insert("Background");
-        trie.insert("Back");
-        trie.insert("Brown");
-        trie.insert("申艳超");
-        trie.insert("blues小站");
+        trie.insert("Test".chars());
+        trie.insert("Tea".chars());
+        trie.insert("Background".chars());
+        trie.insert("Back".chars());
+        trie.insert("Brown".chars());
+        trie.insert("申艳超".chars());
+        trie.insert("blues小站".chars());
 
-        assert_eq!(false, trie.exist("Testing"));
-        assert_eq!(true, trie.exist("Brown"));
-        assert_eq!(true, trie.exist("申艳超"));
-        assert_eq!(false, trie.exist("申超"));
+        assert_eq!(false, trie.exist("Testing".chars()));
+        assert_eq!(true, trie.exist("Brown".chars()));
+        assert_eq!(true, trie.exist("申艳超".chars()));
+        assert_eq!(false, trie.exist("申超".chars()));
     }
 
     #[test]
     fn trie_search() {
         let mut trie = Trie::default();
-        trie.insert("Test");
-        trie.insert("Tea");
-        trie.insert("Background");
-        trie.insert("Back");
-        trie.insert("Brown");
+        trie.insert("Test".chars());
+        trie.insert("Tea".chars());
+        trie.insert("Background".chars());
+        trie.insert("Back".chars());
+        trie.insert("Brown".chars());
+        trie.insert("申艳超".chars());
 
-        let hits = trie.match_word(&String::from("申艳超"));
-        assert_eq!(0, hits.len());
-        let hits = trie.match_word(&String::from("Tea"));
+        let hits = trie.match_word("申艳超".chars());
+        assert_eq!(1, hits.len());
+        let hits = trie.match_word("Tea".chars());
         for hit in hits.iter() {
             println!("{:?}", hit);
         }

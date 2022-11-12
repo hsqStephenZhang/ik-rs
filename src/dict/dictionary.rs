@@ -44,20 +44,20 @@ impl Dictionary {
     // 批量加载新词条
     pub fn add_words(&mut self, words: Vec<&str>) {
         for word in words {
-            self.main_dict.insert(word);
+            self.main_dict.insert(word.chars());
         }
     }
 
     // 批量移除（屏蔽）词条
     pub fn disable_words(&mut self, words: Vec<&str>) {
         for word in words {
-            self.main_dict.delete(word);
+            self.main_dict.delete(word.chars());
         }
     }
 
     // 检索匹配主词典
     pub fn match_in_main_dict(&mut self, word: &str) -> Vec<Hit> {
-        self.main_dict.match_word(word)
+        self.main_dict.match_word(word.chars())
     }
 
     // 检索匹配主词典
@@ -67,7 +67,7 @@ impl Dictionary {
         offset: usize,
         length: usize,
     ) -> Vec<Hit> {
-        self.main_dict.match_word_with_offset(word, offset, length)
+        self.main_dict.match_word_with_offset(word.chars(), offset, length)
     }
 
     // 检索匹配量词词典
@@ -78,14 +78,14 @@ impl Dictionary {
         length: usize,
     ) -> Vec<Hit> {
         self.quantifier_dict
-            .match_word_with_offset(word, offset, length)
+            .match_word_with_offset(word.chars(), offset, length)
     }
 
     // 判断是否是停止词
     pub fn is_stop_word(&mut self, word: &str, offset: usize, length: usize) -> bool {
         let hits = self
             .stop_word_dict
-            .match_word_with_offset(word, offset, length);
+            .match_word_with_offset(word.chars(), offset, length);
         for hit in hits.iter() {
             if hit.is_match() {
                 return true;
@@ -104,7 +104,7 @@ impl Dictionary {
         for line in reader.lines() {
             match line {
                 Ok(word) => {
-                    self.main_dict.insert(word.trim());
+                    self.main_dict.insert(word.trim().chars());
                     total += 1;
                 }
                 Err(e) => {
@@ -127,7 +127,7 @@ impl Dictionary {
             for line in reader.lines() {
                 match line {
                     Ok(word) => {
-                        self.main_dict.insert(word.trim());
+                        self.main_dict.insert(word.trim().chars());
                         total += 1;
                     }
                     Err(e) => {
@@ -157,7 +157,7 @@ impl Dictionary {
             for line in reader.lines() {
                 match line {
                     Ok(word) => {
-                        self.stop_word_dict.insert(word.trim());
+                        self.stop_word_dict.insert(word.trim().chars());
                         total += 1;
                     }
                     Err(e) => {
@@ -185,7 +185,7 @@ impl Dictionary {
         for line in reader.lines() {
             match line {
                 Ok(word) => {
-                    self.quantifier_dict.insert(word.trim());
+                    self.quantifier_dict.insert(word.trim().chars());
                     total += 1;
                 }
                 Err(e) => {
