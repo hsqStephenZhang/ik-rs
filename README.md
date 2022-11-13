@@ -58,3 +58,7 @@ mod tests {
     }
 }
 ```
+
+## TODO
+
+current impl is unaware of segmentor context, so it may have fine distinction with [the standard impl](https://github.com/medcl/elasticsearch-analysis-ik), WIP
