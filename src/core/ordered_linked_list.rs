@@ -477,8 +477,6 @@ impl<T: PartialOrd> Drop for OrderedLinkedList<T> {
             drop(node);
             mem::forget(guard);
         }
-
-        // println!("LinkedList dropped!")
     }
 }
 
@@ -502,7 +500,7 @@ impl<T: PartialOrd> Drop for IntoIter<T> {
         // buffer will clean itself up afterwards.
         for _ in &mut *self {}
 
-        println!("IntoIter has been dropped!")
+        log::debug!("IntoIter has been dropped!")
     }
 }
 

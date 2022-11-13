@@ -132,7 +132,7 @@ impl Dictionary {
                 }
             }
         }
-        println!("load main_dict size = {}", total);
+        log::debug!("load main_dict size = {}", total);
         // 加载扩展词典
         self.load_ext_dict()
     }
@@ -156,7 +156,7 @@ impl Dictionary {
                 }
             }
         }
-        println!("ext dict total size = {}", total);
+        log::debug!("ext dict total size = {}", total);
         true
     }
 
@@ -171,7 +171,7 @@ impl Dictionary {
             .get_ext_stop_word_dictionaries();
         let mut total = 0_usize;
         for stop_file in ext_stop_word_dict_files {
-            println!("{}", stop_file);
+            log::debug!("{}", stop_file);
             let file = File::open(stop_file).expect("open error");
             let reader = BufReader::new(file);
             for line in reader.lines() {
@@ -186,7 +186,7 @@ impl Dictionary {
                 }
             }
         }
-        println!("stop dict total size = {}", total);
+        log::debug!("stop dict total size = {}", total);
         true
     }
 
@@ -213,7 +213,7 @@ impl Dictionary {
                 }
             }
         }
-        println!("quantifier_dict total size = {}", total);
+        log::debug!("quantifier_dict total size = {}", total);
         true
     }
 }
