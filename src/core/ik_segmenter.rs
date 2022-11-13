@@ -1,6 +1,6 @@
 use std::collections::{HashMap, LinkedList};
 
-use crate::core::char_util::{char_type_of, regularize_str, CharType};
+use crate::core::char_util::{char_type_of, CharType};
 use crate::core::cjk_segmenter::CJKSegmenter;
 use crate::core::cn_quantifier_segmenter::CnQuantifierSegmenter;
 use crate::core::ik_arbitrator::IKArbitrator;
@@ -65,9 +65,7 @@ impl IKSegmenter {
         }
     }
 
-    pub fn tokenize(&mut self, text: &str, mode: TokenMode) -> Vec<Lexeme> {
-        let regular_str = regularize_str(text);
-        let input_str = regular_str.as_str();
+    pub fn tokenize(&mut self, input_str: &str, mode: TokenMode) -> Vec<Lexeme> {
         let chars = input_str.chars().collect::<Vec<_>>();
         // 遍历子分词器
         let mut origin_lexemes = OrderedLinkedList::new();

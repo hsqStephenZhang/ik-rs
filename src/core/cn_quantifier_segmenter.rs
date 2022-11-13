@@ -1,5 +1,6 @@
 use std::collections::HashSet;
 
+use super::ordered_linked_list::OrderedLinkedList;
 use crate::core::char_util::{char_type_of, CharType};
 use crate::core::lexeme::{Lexeme, LexemeType};
 use crate::core::segmentor::Segmenter;
@@ -17,9 +18,13 @@ pub struct CnQuantifierSegmenter {
 impl Segmenter for CnQuantifierSegmenter {
     fn analyze(&mut self, input: &[char]) -> Vec<Lexeme> {
         // 处理中文数词
+        let mut cnumber_list = OrderedLinkedList::<Lexeme>::new();
         let a = self.process_cnumber(input);
+        for item in a.iter() {
+            cnumber_list.insert(item.clone()).unwrap();
+        }
         // 处理中文量词
-        let b = self.process_count(input);
+        let b = self.process_count(input, &cnumber_list);
         let mut new_lexemes: Vec<Lexeme> = Vec::with_capacity(a.len() + b.len());
         new_lexemes.extend(a);
         new_lexemes.extend(b);
@@ -103,12 +108,16 @@ impl CnQuantifierSegmenter {
     }
 
     //  处理中文量词
-    pub fn process_count(&mut self, chars: &[char]) -> Vec<Lexeme> {
+    pub fn process_count(
+        &mut self,
+        chars: &[char],
+        cnumber_list: &OrderedLinkedList<Lexeme>,
+    ) -> Vec<Lexeme> {
         let mut new_lexemes = Vec::new();
         // 判断是否需要启动量词扫描
-        if self.need_count_scan() {
-            let char_count = chars.len();
-            for (cursor, curr_char) in chars.iter().enumerate() {
+        let char_count = chars.len();
+        for (cursor, curr_char) in chars.iter().enumerate() {
+            if self.need_count_scan(cnumber_list, cursor) {
                 let curr_char_type = char_type_of(curr_char);
                 if CharType::CHINESE == curr_char_type {
                     let hit_options = GLOBAL_DICT.lock().unwrap().match_in_quantifier_dict(
@@ -135,11 +144,28 @@ impl CnQuantifierSegmenter {
     }
 
     // 判断是否需要扫描量词
-    fn need_count_scan(&self) -> bool {
-        if self.n_start == -1 || self.n_end == -1 {
-            return false;
+    fn need_count_scan(&self, cnumber_list: &OrderedLinkedList<Lexeme>, cursor: usize) -> bool {
+        if self.n_start != -1 && self.n_end != -1 {
+            return true;
         }
-        true
+        if !cnumber_list.is_empty() {
+            let mut last_node = cnumber_list.tail_node();
+            unsafe {
+                while let Some(t) = last_node {
+                    let l = &t.as_ref().val;
+                    if l.lexeme_type == LexemeType::CNUM || l.lexeme_type == LexemeType::ARABIC {
+                        if l.get_begin() + l.get_length() == cursor {
+                            return true;
+                        } else if l.get_begin() + l.get_length() < cursor {
+                            break;
+                        }
+                    }
+                    last_node = t.as_ref().prev.as_ref();
+                }
+            }
+        }
+
+        false
     }
 }
 
@@ -150,9 +176,9 @@ mod tests {
 
     #[test]
     fn t1() {
-        let chars = "一二三四五".chars().collect::<Vec<_>>();
+        let chars = "一块根".chars().collect::<Vec<_>>();
         let mut s = CnQuantifierSegmenter::new();
         let r = s.analyze(&chars);
-        assert_ne!(r, Vec::new());
+        assert_eq!(r.len(), 2);
     }
 }

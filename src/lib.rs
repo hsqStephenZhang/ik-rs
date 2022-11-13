@@ -10,6 +10,7 @@ use std::sync::Mutex;
 use once_cell::sync::Lazy;
 use tantivy::tokenizer::{BoxTokenStream, Token, TokenStream, Tokenizer};
 
+use crate::core::char_util::regularize_str;
 use crate::core::ik_segmenter::{IKSegmenter, TokenMode};
 
 pub static GLOBAL_IK: Lazy<Mutex<IKSegmenter>> = Lazy::new(|| {
@@ -54,6 +55,8 @@ impl IkTokenizer {
 
 impl Tokenizer for IkTokenizer {
     fn token_stream<'a>(&self, text: &'a str) -> BoxTokenStream<'a> {
+        let regular_str = regularize_str(text);
+        let text = regular_str.as_str();
         let mut indices = text.char_indices().collect::<Vec<_>>();
         indices.push((text.len(), '\0'));
         let orig_tokens = GLOBAL_IK.lock().unwrap().tokenize(text, self.mode);
@@ -96,31 +99,6 @@ mod tests {
             "张华考上了北京大学；李萍进了中等技术学校；我在百货公司当售货员：我们都有光明的前途";
         test_once(
             TEXT,
-            TokenMode::SEARCH,
-            vec![
-                "张华",
-                "考",
-                "上了",
-                "北京大学",
-                "李萍",
-                "进了",
-                "中等",
-                "技术学校",
-                "我",
-                "在",
-                "百货公司",
-                "当",
-                "售货员",
-                "我们",
-                "都有",
-                "光明",
-                "的",
-                "前途",
-            ],
-        );
-
-        test_once(
-            TEXT,
             TokenMode::INDEX,
             vec![
                 "张华",
@@ -148,10 +126,32 @@ mod tests {
                 "售货",
                 "货员",
                 "我们",
-                "我",
-                "们",
                 "都有",
-                "有",
+                "光明",
+                "的",
+                "前途",
+            ],
+        );
+
+        test_once(
+            TEXT,
+            TokenMode::SEARCH,
+            vec![
+                "张华",
+                "考",
+                "上了",
+                "北京大学",
+                "李萍",
+                "进了",
+                "中等",
+                "技术学校",
+                "我",
+                "在",
+                "百货公司",
+                "当",
+                "售货员",
+                "我们",
+                "都有",
                 "光明",
                 "的",
                 "前途",
@@ -183,13 +183,18 @@ mod tests {
         test_once(
             "Lark Search 综搜质量小分队",
             TokenMode::INDEX,
-            vec!["Lark", "Search", "综", "搜", "质量", "小分队", "分队"],
+            vec!["lark", "search", "综", "搜", "质量", "小分队", "分队"],
         );
         test_once(
             "Lark Search 综搜质量小分队",
             TokenMode::SEARCH,
-            vec!["Lark", "Search", "综", "搜", "质量", "小分队"],
+            vec!["lark", "search", "综", "搜", "质量", "小分队"],
         );
+    }
+
+    #[test]
+    fn test_regularize() {
+        test_once("Ａｄｅ", TokenMode::INDEX, vec!["Ade"])
     }
 
     #[test]
@@ -204,5 +209,82 @@ mod tests {
             TokenMode::SEARCH,
             vec!["我家", "的", "后", "面有"],
         );
+    }
+
+    #[test]
+    fn test_full2() {
+        test_once(
+            "一块根",
+            TokenMode::INDEX,
+            vec!["一块", "一", "块根", "块", "根"],
+        );
+        test_once("一块根", TokenMode::SEARCH, vec!["一", "块根"]);
+    }
+
+    #[test]
+    fn test_full3() {
+        test_once(
+            "蒙在小说的绣像上一个个描下来，象习字时候的影写一样",
+            TokenMode::INDEX,
+            vec![
+                "蒙在",
+                "小说",
+                "的",
+                "绣像",
+                "上一个",
+                "一个个",
+                "一个",
+                "一",
+                "个个",
+                "个",
+                "个",
+                "描",
+                "下来",
+                "象",
+                "习字",
+                "时候",
+                "的",
+                "影",
+                "写",
+                "一样",
+                "一",
+                "样",
+            ],
+        );
+        test_once(
+            "蒙在小说的绣像上一个个描下来，象习字时候的影写一样",
+            TokenMode::SEARCH,
+            vec![
+                "蒙在",
+                "小说",
+                "的",
+                "绣像",
+                "上",
+                "一个个",
+                "描",
+                "下来",
+                "象",
+                "习字",
+                "时候",
+                "的",
+                "影",
+                "写",
+                "一样",
+            ],
+        );
+    }
+
+    // “十八” 这个量词既在 main_dict 出现，也在量词中出现，发生冲突
+    #[test]
+    #[should_panic]
+    fn test_full4() {
+        test_once("十八日", TokenMode::INDEX, vec!["十八日", "十八", "八日"]);
+    }
+
+    // 合并了量词
+    #[test]
+    #[should_panic]
+    fn test_full5() {
+        test_once("一两天", TokenMode::INDEX, vec!["一两", "两天", "两", "天"]);
     }
 }
