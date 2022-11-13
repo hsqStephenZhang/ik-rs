@@ -1,4 +1,4 @@
-use crate::core::char_util::{char_type_of, utf8_len, CharType};
+use crate::core::char_util::{char_type_of, CharType};
 use crate::core::lexeme::{Lexeme, LexemeType};
 use crate::core::segmentor::Segmenter;
 
@@ -32,17 +32,17 @@ pub struct LetterSegmenter {
 }
 
 impl Segmenter for LetterSegmenter {
-    fn analyze(&mut self, input: &str) -> Vec<Lexeme> {
-        let mut new_lexemes = Vec::new();
+    fn analyze(&mut self, input: &[char]) -> Vec<Lexeme> {
         // 处理英文字母
-        let mut a = self.process_english_letter(input);
+        let a = self.process_english_letter(input);
         // 处理阿拉伯字母
-        let mut b = self.process_arabic_letter(input);
+        let b = self.process_arabic_letter(input);
         // 处理混合字母(这个要放最后处理，可以通过QuickSortSet排除重复)
-        let mut c = self.process_mix_letter(input);
-        new_lexemes.append(&mut a);
-        new_lexemes.append(&mut b);
-        new_lexemes.append(&mut c);
+        let c = self.process_mix_letter(input);
+        let mut new_lexemes = Vec::with_capacity(a.len() + b.len() + c.len());
+        new_lexemes.extend(a);
+        new_lexemes.extend(b);
+        new_lexemes.extend(c);
         new_lexemes
     }
     fn name(&self) -> &str {
@@ -70,10 +70,10 @@ impl LetterSegmenter {
 
     /// 处理数字字母混合输出
     /// 如：windos2000 | zhiyi.shen@gmail.com
-    pub fn process_mix_letter(&mut self, input: &str) -> Vec<Lexeme> {
+    pub fn process_mix_letter(&mut self, chars: &[char]) -> Vec<Lexeme> {
         let mut new_lexemes = Vec::new();
-        let char_count = utf8_len(input);
-        for (cursor, curr_char) in input.chars().enumerate() {
+        let char_count = chars.len();
+        for (cursor, curr_char) in chars.iter().enumerate() {
             let curr_char_type = char_type_of(curr_char);
             if self.start == -1 {
                 // 当前的分词器尚未开始处理字符
@@ -120,10 +120,10 @@ impl LetterSegmenter {
     }
 
     // 处理纯英文字母输出
-    fn process_english_letter(&mut self, input: &str) -> Vec<Lexeme> {
+    fn process_english_letter(&mut self, input: &[char]) -> Vec<Lexeme> {
         let mut new_lexemes = Vec::new();
-        let char_count = utf8_len(input);
-        for (cursor, curr_char) in input.chars().enumerate() {
+        let char_count = input.len();
+        for (cursor, curr_char) in input.iter().enumerate() {
             let curr_char_type = char_type_of(curr_char);
             if self.english_start == -1 {
                 // 当前的分词器尚未开始处理英文字符
@@ -167,10 +167,10 @@ impl LetterSegmenter {
     }
 
     /// 处理阿拉伯数字输出
-    fn process_arabic_letter(&mut self, input: &str) -> Vec<Lexeme> {
+    fn process_arabic_letter(&mut self, chars: &[char]) -> Vec<Lexeme> {
         let mut new_lexemes = Vec::new();
-        let char_count = utf8_len(input);
-        for (cursor, curr_char) in input.chars().enumerate() {
+        let char_count = chars.len();
+        for (cursor, curr_char) in chars.iter().enumerate() {
             let curr_char_type = char_type_of(curr_char);
             if self.arabic_start == -1 {
                 // 当前的分词器尚未开始处理数字字符
@@ -215,12 +215,12 @@ impl LetterSegmenter {
     }
 
     // 判断是否是字母连接符号
-    pub fn is_letter_connector(&self, input: char) -> bool {
-        LETTER_CONNECTOR.contains(&input)
+    pub fn is_letter_connector(&self, c: &char) -> bool {
+        LETTER_CONNECTOR.contains(c)
     }
 
     // 判断是否是数字连接符号
-    pub fn is_num_connector(&self, input: char) -> bool {
-        NUM_CONNECTOR.contains(&input)
+    pub fn is_num_connector(&self, c: &char) -> bool {
+        NUM_CONNECTOR.contains(c)
     }
 }

@@ -45,12 +45,13 @@ impl IKSegmenter {
 
     pub fn tokenize(&mut self, text: &str, mode: TokenMode) -> Vec<Lexeme> {
         let regular_str = regularize_str(text);
-        let input = regular_str.as_str();
+        let input_str = regular_str.as_str();
+        let chars = input_str.chars().collect::<Vec<_>>();
         // 遍历子分词器
         let mut origin_lexemes = OrderedLinkedList::new();
         for segmenter in self.segmenters.iter_mut() {
             println!("sub segmenter->{}", segmenter.name());
-            let lexemes = segmenter.analyze(input);
+            let lexemes = segmenter.analyze(&chars);
             for lexeme in lexemes {
                 origin_lexemes.insert(lexeme).expect("error!");
             }
@@ -59,27 +60,23 @@ impl IKSegmenter {
         // 对分词进行歧义处理
         path_map = self.arbitrator.process(&mut origin_lexemes, mode);
         // 将分词结果输出到结果集，并处理未切分的单个CJK字符
-        let mut results = self.output_to_result(&mut path_map, input);
+        let mut results = self.output_to_result(&mut path_map, &chars);
         let mut final_results = Vec::new();
         // remove stop word
-        let mut result = results.pop_front();
-        let mut result_value;
-        while result.is_some() {
+        while let Some(mut result_value)=results.pop_front() {
             // 数量词合并
-            result_value = result.as_mut().unwrap();
             if mode == TokenMode::SEARCH {
-                self.compound(&mut results, result_value);
+                self.compound(&mut results, &mut result_value);
             }
             if !GLOBAL_DICT.lock().unwrap().is_stop_word(
-                input,
+                input_str.chars(),
                 result_value.get_begin(),
                 result_value.get_length(),
             ) {
                 // 不是停止词, 生成lexeme的词元文本,输出
-                result_value.parse_lexeme_text(input);
+                result_value.parse_lexeme_text(input_str);
                 final_results.push(result_value.clone())
             }
-            result = results.pop_front();
         }
         final_results
     }
@@ -91,14 +88,14 @@ impl IKSegmenter {
     pub fn output_to_result(
         &mut self,
         path_map: &mut HashMap<usize, LexemePath>,
-        input: &str,
+        input: &[char],
     ) -> LinkedList<Lexeme> {
         let mut results = LinkedList::new();
         let mut index = 0usize;
-        let char_count = input.chars().count();
+        let char_count = input.len();
         while index < char_count {
-            let curr_char = input.chars().nth(index).unwrap();
-            let cur_char_type = char_type_of(curr_char);
+            let curr_char = input[index];
+            let cur_char_type = char_type_of(&curr_char);
             // 跳过非CJK字符
             if CharType::USELESS == cur_char_type {
                 index += 1;
@@ -119,8 +116,8 @@ impl IKSegmenter {
                         let new_l_value = l.as_ref().unwrap();
                         // 输出path内部，词元间遗漏的单字
                         while index < new_l_value.get_begin() {
-                            let curr_char = input.chars().nth(index).unwrap();
-                            let cur_char_type = char_type_of(curr_char);
+                            let curr_char = input[index];
+                            let cur_char_type = char_type_of(&curr_char);
                             if CharType::CHINESE == cur_char_type {
                                 let single_char_lexeme =
                                     Lexeme::new(0, index, 1, LexemeType::CNCHAR);
@@ -136,8 +133,8 @@ impl IKSegmenter {
                 }
             } else {
                 // pathMap中找不到index对应的LexemePath, 单字输出
-                let curr_char = input.chars().nth(index).unwrap();
-                let cur_char_type = char_type_of(curr_char);
+                let curr_char = input[index];
+                let cur_char_type = char_type_of(&curr_char);
                 if CharType::CHINESE == cur_char_type {
                     let single_char_lexeme = Lexeme::new(0, index, 1, LexemeType::CNCHAR);
                     results.push_back(single_char_lexeme);

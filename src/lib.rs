@@ -123,7 +123,7 @@ mod tests {
     }
 
     #[test]
-    fn t2() {
+    fn test_index_tokenizer() {
         use tantivy::tokenizer::*;
         let tokenizer = crate::IkTokenizer::new(TokenMode::INDEX);
         let mut token_stream = tokenizer.token_stream(TEXT);
@@ -168,5 +168,17 @@ mod tests {
                 "前途"
             ]
         );
+    }
+
+    #[test]
+    fn test_cn_quantifier() {
+        use tantivy::tokenizer::*;
+        let tokenizer = crate::IkTokenizer::new(TokenMode::SEARCH);
+        let mut token_stream = tokenizer.token_stream("一个好人");
+        let mut token_text = Vec::new();
+        while let Some(token) = token_stream.next() {
+            token_text.push(token.text.clone());
+        }
+        assert_eq!(token_text, vec!["一个", "好人",]);
     }
 }

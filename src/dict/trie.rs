@@ -73,16 +73,17 @@ impl TrieNode {
     pub fn insert<C: Iterator<Item = char>>(&mut self, chars: C) {
         let mut current_node = self;
         let char_list: Vec<char> = chars.collect();
-        let mut final_state = false;
+        let length=char_list.len();
 
-        for (idx, c) in char_list.iter().enumerate() {
+        for c in char_list.iter().take(length - 1) {
             if !current_node.child_nodes.contains_key(c) {
-                if idx == char_list.len() - 1 {
-                    final_state = true;
-                }
-                current_node.add_child(*c, final_state);
+                current_node.add_child(*c, false);
             }
             current_node = current_node.child_nodes.get_mut(c).unwrap();
+        }
+        // last char in the list, this should be a final state
+        if !current_node.child_nodes.contains_key(&char_list[length-1]){
+            current_node.add_child(char_list[length-1], true);
         }
     }
 

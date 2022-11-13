@@ -34,15 +34,15 @@ pub struct Dictionary {
     cfg: Option<Rc<dyn Configuration>>,
 }
 
-impl Default for Dictionary{
+impl Default for Dictionary {
     fn default() -> Self {
         let root_path = env!("CARGO_MANIFEST_DIR");
         let conf_file_path = Path::new(root_path).join(IK_CONFIG_NAME);
-        Self{
+        Self {
             main_dict: Dict::default(),
-            stop_word_dict:Dict::default(),
-            quantifier_dict:Dict::default(),
-            cfg: Some(Rc::new(DefaultConfig::new(conf_file_path)))
+            stop_word_dict: Dict::default(),
+            quantifier_dict: Dict::default(),
+            cfg: Some(Rc::new(DefaultConfig::new(conf_file_path))),
         }
     }
 }
@@ -70,36 +70,42 @@ impl Dictionary {
     }
 
     // 检索匹配主词典
-    pub fn match_in_main_dict(&mut self, word: &str) -> Vec<Hit> {
-        self.main_dict.match_word(word.chars())
+    pub fn match_in_main_dict<C: IntoIterator<Item = char>>(&mut self, word: C) -> Vec<Hit> {
+        self.main_dict.match_word(word.into_iter())
     }
 
     // 检索匹配主词典
-    pub fn match_in_main_dict_with_offset(
+    pub fn match_in_main_dict_with_offset<C: IntoIterator<Item = char>>(
         &mut self,
-        word: &str,
+        word: C,
         offset: usize,
         length: usize,
     ) -> Vec<Hit> {
-        self.main_dict.match_word_with_offset(word.chars(), offset, length)
+        self.main_dict
+            .match_word_with_offset(word.into_iter(), offset, length)
     }
 
     // 检索匹配量词词典
-    pub fn match_in_quantifier_dict(
+    pub fn match_in_quantifier_dict<C: IntoIterator<Item = char>>(
         &mut self,
-        word: &str,
+        word: C,
         offset: usize,
         length: usize,
     ) -> Vec<Hit> {
         self.quantifier_dict
-            .match_word_with_offset(word.chars(), offset, length)
+            .match_word_with_offset(word.into_iter(), offset, length)
     }
 
     // 判断是否是停止词
-    pub fn is_stop_word(&mut self, word: &str, offset: usize, length: usize) -> bool {
+    pub fn is_stop_word<C: IntoIterator<Item = char>>(
+        &mut self,
+        word: C,
+        offset: usize,
+        length: usize,
+    ) -> bool {
         let hits = self
             .stop_word_dict
-            .match_word_with_offset(word.chars(), offset, length);
+            .match_word_with_offset(word.into_iter(), offset, length);
         for hit in hits.iter() {
             if hit.is_match() {
                 return true;
@@ -226,7 +232,7 @@ mod test {
         let vec_exist = vec!["一夕之间", "ab", "万般皆下品唯有读书高", "张三", "张"];
         println!("{}", "一夕之间".to_string().len());
         for word in vec_exist {
-            let hits = dictionary.match_in_main_dict(word);
+            let hits = dictionary.match_in_main_dict(word.chars());
             assert!(!hits.is_empty());
         }
     }

@@ -10,13 +10,13 @@ pub enum CharType {
 }
 
 // identify CharType Of char
-pub fn char_type_of(input: char) -> CharType {
-    if ('0'..='9').contains(&input) {
+pub fn char_type_of(input: &char) -> CharType {
+    if ('0'..='9').contains(input) {
         return CharType::ARABIC;
-    } else if ('a'..='z').contains(&input) || ('A'..='Z').contains(&input) {
+    } else if ('a'..='z').contains(input) || ('A'..='Z').contains(input) {
         return CharType::ENGLISH;
     } else {
-        let ub = unicode_blocks::find_unicode_block(input).unwrap();
+        let ub = unicode_blocks::find_unicode_block(*input).unwrap();
         if ub == unicode_blocks::CJK_UNIFIED_IDEOGRAPHS
             || ub == unicode_blocks::CJK_COMPATIBILITY_IDEOGRAPHS
             || ub == unicode_blocks::CJK_UNIFIED_IDEOGRAPHS_EXTENSION_A
