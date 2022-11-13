@@ -78,27 +78,25 @@ impl Tokenizer for IkTokenizer {
 mod tests {
     use crate::TokenMode;
 
-    const TEXT: &str =
-        "张华考上了北京大学；李萍进了中等技术学校；我在百货公司当售货员：我们都有光明的前途";
+    fn test_once(text: &str, mode: TokenMode, expect_tokens: Vec<&str>) {
+        use tantivy::tokenizer::*;
+        let tokenizer = crate::IkTokenizer::new(mode);
+        let mut token_stream = tokenizer.token_stream(text);
+        let mut token_text = Vec::new();
+        while let Some(token) = token_stream.next() {
+            token_text.push(token.text.clone());
+        }
+
+        assert_eq!(token_text, expect_tokens);
+    }
 
     #[test]
     fn tantivy_ik_works() {
-        use tantivy::tokenizer::*;
-        let tokenizer = crate::IkTokenizer::new(TokenMode::SEARCH);
-        let mut token_stream = tokenizer.token_stream(TEXT);
-        let mut tokens = Vec::new();
-        let mut token_text = Vec::new();
-        while let Some(token) = token_stream.next() {
-            tokens.push(token.clone());
-            token_text.push(token.text.clone());
-        }
-        // offset should be byte-indexed
-        assert_eq!(tokens[0].offset_from, 0);
-        assert_eq!(tokens[0].offset_to, "张华".bytes().len());
-        assert_eq!(tokens[1].offset_from, "张华".bytes().len());
-        // check tokenized text
-        assert_eq!(
-            token_text,
+        const TEXT: &str =
+            "张华考上了北京大学；李萍进了中等技术学校；我在百货公司当售货员：我们都有光明的前途";
+        test_once(
+            TEXT,
+            TokenMode::SEARCH,
             vec![
                 "张华",
                 "考",
@@ -117,22 +115,18 @@ mod tests {
                 "都有",
                 "光明",
                 "的",
-                "前途"
-            ]
+                "前途",
+            ],
         );
     }
 
     #[test]
     fn test_index_tokenizer() {
-        use tantivy::tokenizer::*;
-        let tokenizer = crate::IkTokenizer::new(TokenMode::INDEX);
-        let mut token_stream = tokenizer.token_stream(TEXT);
-        let mut token_text = Vec::new();
-        while let Some(token) = token_stream.next() {
-            token_text.push(token.text.clone());
-        }
-        assert_eq!(
-            token_text,
+        const TEXT: &str =
+            "张华考上了北京大学；李萍进了中等技术学校；我在百货公司当售货员：我们都有光明的前途";
+        test_once(
+            TEXT,
+            TokenMode::INDEX,
             vec![
                 "张华",
                 "考上",
@@ -165,20 +159,35 @@ mod tests {
                 "有",
                 "光明",
                 "的",
-                "前途"
-            ]
+                "前途",
+            ],
         );
     }
 
     #[test]
     fn test_cn_quantifier() {
-        use tantivy::tokenizer::*;
-        let tokenizer = crate::IkTokenizer::new(TokenMode::INDEX);
-        let mut token_stream = tokenizer.token_stream("一二三四五");
-        let mut token_text = Vec::new();
-        while let Some(token) = token_stream.next() {
-            token_text.push(token.text.clone());
-        }
-        assert_eq!(token_text, vec!["一二三四五", "二三", "四五"]);
+        const TEXT: &str = "一二三四五六七八九十";
+        test_once(
+            TEXT,
+            TokenMode::INDEX,
+            vec![
+                "一二三四五六七八九十",
+                "二三",
+                "四五",
+                "六七",
+                "七八",
+                "八九",
+                "十",
+            ],
+        );
+    }
+
+    #[test]
+    fn test_letters() {
+        test_once(
+            "Lark Search 综搜质量小分队",
+            TokenMode::SEARCH,
+            vec!["Lark", "Search", "综", "搜", "质量", "小分队"],
+        );
     }
 }
