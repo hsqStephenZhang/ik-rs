@@ -16,6 +16,22 @@ pub enum TokenMode {
     INDEX,
     SEARCH,
 }
+
+impl TryFrom<&str> for TokenMode {
+    type Error = String;
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        match value {
+            "ik_max" => Ok(TokenMode::INDEX),
+            "ik_smart" => Ok(TokenMode::SEARCH),
+            _ => Err(format!(
+                "only support ik_max or ik_smart, your input={:?} donnot satisfy",
+                value
+            )),
+        }
+    }
+}
+
 // ik main class
 pub struct IKSegmenter {
     segmenters: Vec<Box<dyn Segmenter>>,
@@ -63,7 +79,7 @@ impl IKSegmenter {
         let mut results = self.output_to_result(&mut path_map, &chars);
         let mut final_results = Vec::new();
         // remove stop word
-        while let Some(mut result_value)=results.pop_front() {
+        while let Some(mut result_value) = results.pop_front() {
             // 数量词合并
             if mode == TokenMode::SEARCH {
                 self.compound(&mut results, &mut result_value);
