@@ -118,12 +118,7 @@ mod tests {
                 "前途",
             ],
         );
-    }
 
-    #[test]
-    fn test_index_tokenizer() {
-        const TEXT: &str =
-            "张华考上了北京大学；李萍进了中等技术学校；我在百货公司当售货员：我们都有光明的前途";
         test_once(
             TEXT,
             TokenMode::INDEX,
@@ -180,14 +175,34 @@ mod tests {
                 "十",
             ],
         );
+        test_once(TEXT, TokenMode::SEARCH, vec!["一二三四五六七八九十"]);
     }
 
     #[test]
     fn test_letters() {
         test_once(
             "Lark Search 综搜质量小分队",
+            TokenMode::INDEX,
+            vec!["Lark", "Search", "综", "搜", "质量", "小分队", "分队"],
+        );
+        test_once(
+            "Lark Search 综搜质量小分队",
             TokenMode::SEARCH,
             vec!["Lark", "Search", "综", "搜", "质量", "小分队"],
+        );
+    }
+
+    #[test]
+    fn test_full1() {
+        test_once(
+            "我家的后面有",
+            TokenMode::INDEX,
+            vec!["我家", "的", "后面", "面有"],
+        );
+        test_once(
+            "我家的后面有",
+            TokenMode::SEARCH,
+            vec!["我家", "的", "后", "面有"],
         );
     }
 }

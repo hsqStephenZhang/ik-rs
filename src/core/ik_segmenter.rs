@@ -17,6 +17,12 @@ pub enum TokenMode {
     SEARCH,
 }
 
+impl Default for TokenMode {
+    fn default() -> Self {
+        Self::INDEX
+    }
+}
+
 impl TryFrom<&str> for TokenMode {
     type Error = String;
 
