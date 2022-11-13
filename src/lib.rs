@@ -173,12 +173,12 @@ mod tests {
     #[test]
     fn test_cn_quantifier() {
         use tantivy::tokenizer::*;
-        let tokenizer = crate::IkTokenizer::new(TokenMode::SEARCH);
-        let mut token_stream = tokenizer.token_stream("一个好人");
+        let tokenizer = crate::IkTokenizer::new(TokenMode::INDEX);
+        let mut token_stream = tokenizer.token_stream("一二三四五");
         let mut token_text = Vec::new();
         while let Some(token) = token_stream.next() {
             token_text.push(token.text.clone());
         }
-        assert_eq!(token_text, vec!["一个", "好人",]);
+        assert_eq!(token_text, vec!["一二三四五", "二三", "四五"]);
     }
 }

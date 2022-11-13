@@ -52,6 +52,7 @@ impl CnQuantifierSegmenter {
     // 处理数词
     pub fn process_cnumber(&mut self, input: &[char]) -> Vec<Lexeme> {
         let mut new_lexemes = Vec::new();
+        let input_length = input.len();
         for (cursor, curr_char) in input.iter().enumerate() {
             let curr_char_type = char_type_of(curr_char);
             if self.n_start == -1 && self.n_end == -1 {
@@ -84,7 +85,7 @@ impl CnQuantifierSegmenter {
             }
 
             // 缓冲区已经用完，还有尚未输出的数词
-            if self.n_start != -1 && self.n_end != -1 {
+            if cursor == input_length - 1 && self.n_start != -1 && self.n_end != -1 {
                 // 输出数词
                 let new_lexeme = Lexeme::new(
                     0,
@@ -139,5 +140,19 @@ impl CnQuantifierSegmenter {
             return false;
         }
         true
+    }
+}
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+
+    #[test]
+    fn t1() {
+        let chars = "一二三四五".chars().collect::<Vec<_>>();
+        let mut s = CnQuantifierSegmenter::new();
+        let r = s.analyze(&chars);
+        assert_ne!(r, Vec::new());
     }
 }
