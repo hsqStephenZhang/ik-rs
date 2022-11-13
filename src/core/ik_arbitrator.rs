@@ -16,7 +16,7 @@ impl IKArbitrator {
     }
 
     // 分词歧义处理
-    pub unsafe fn process(
+    pub fn process(
         &mut self,
         org_lexemes: &mut OrderedLinkedList<Lexeme>,
         mode: TokenMode,
@@ -24,8 +24,11 @@ impl IKArbitrator {
         let mut path_map = HashMap::<usize, LexemePath>::new();
         let mut cross_path = LexemePath::new();
         let mut cur_node = org_lexemes.head_node();
-        while cur_node.is_some() {
-            let org_lexeme = &(cur_node.as_ref().unwrap().as_ref().val);
+        while let Some(inner) = cur_node {
+            // safety: we own the ordered linked list, so deref the NonNull node is safe
+            let org_lexeme = unsafe {
+                &(inner.as_ref().val)
+            };
             if !cross_path.add_cross_lexeme(org_lexeme) {
                 // 找到与crossPath不相交的下一个crossPath
                 if cross_path.size() == 1 || !(mode == TokenMode::SEARCH) {
@@ -45,7 +48,10 @@ impl IKArbitrator {
                 cross_path = LexemePath::new();
                 cross_path.add_cross_lexeme(org_lexeme);
             }
-            cur_node = cur_node.as_ref().unwrap().as_ref().next.as_ref();
+            // safety: we own the ordered linked list
+            unsafe {
+                cur_node = inner.as_ref().next.as_ref();
+            }
         }
 
         // 处理最后的path
@@ -69,23 +75,21 @@ impl IKArbitrator {
     ///
     /// @param lexeme_cell     歧义路径链表头
     /// @param fullTextLength 歧义路径文本长度
-    pub unsafe fn judge(&mut self, cur_node: Option<&NonNull<Node<Lexeme>>>) -> Option<LexemePath> {
+    pub fn judge(&mut self, cur_node: Option<&NonNull<Node<Lexeme>>>) -> Option<LexemePath> {
         // 候选路径集合
         let mut path_options = BTreeSet::new();
         // 候选结果路径
-        let mut option = LexemePath::new();
+        let mut option_path = LexemePath::new();
         // 对crossPath进行一次遍历,同时返回本次遍历中有冲突的Lexeme栈
-        let mut lexeme_stack = self.forward_path(cur_node, &mut option);
+        let mut lexeme_stack = self.forward_path(cur_node, &mut option_path);
         // 当前词元链并非最理想的，加入候选路径集合
-        path_options.insert(option.clone());
-        let mut c;
-        while !lexeme_stack.is_empty() {
-            c = lexeme_stack.pop();
+        path_options.insert(option_path.clone());
+        while let Some(c) = lexeme_stack.pop() {
             // rollback path
-            self.back_path(c.unwrap(), &mut option);
+            self.back_path(c, &mut option_path);
             // forward path
-            self.forward_path(c.unwrap(), &mut option);
-            path_options.insert(option.clone());
+            self.forward_path(c, &mut option_path);
+            path_options.insert(option_path.clone());
         }
         // 返回集合中的最优方案
         let mut a = None;
@@ -96,31 +100,38 @@ impl IKArbitrator {
     }
 
     // 向前遍历，添加词元，构造一个无歧义词元组合
-    pub unsafe fn forward_path<'a>(
+    pub fn forward_path<'a>(
         &'a self,
         cur_node: Option<&'a NonNull<Node<Lexeme>>>,
-        option: &mut LexemePath,
+        option_path: &mut LexemePath,
     ) -> Vec<Option<&NonNull<Node<Lexeme>>>> {
         // 发生冲突的Lexeme栈
         let mut conflict_stack: Vec<Option<&NonNull<Node<Lexeme>>>> = Vec::new();
         // 迭代遍历Lexeme链表
         let mut cur = cur_node;
-        while cur.is_some() {
-            let c = &(cur.as_ref().unwrap().as_ref().val);
-            if !option.add_not_cross_lexeme(c) {
-                // 词元交叉，添加失败则加入lexemeStack栈
-                conflict_stack.push(cur);
+        // safety: cur is Some
+        while let Some(inner) = cur.as_ref() {
+            unsafe {
+                let c = &(inner.as_ref().val);
+                if !option_path.add_not_cross_lexeme(c) {
+                    // 词元交叉，添加失败则加入lexemeStack栈
+                    conflict_stack.push(cur);
+                }
+                cur = inner.as_ref().next.as_ref();
             }
-            cur = cur.as_ref().unwrap().as_ref().next.as_ref();
         }
         conflict_stack
     }
 
     // 回滚词元链，直到它能够接受指定的词元
-    pub unsafe fn back_path(&self, l: Option<&NonNull<Node<Lexeme>>>, option: &mut LexemePath) {
-        let lexeme = &(l.as_ref().unwrap().as_ref().val);
-        while option.check_cross(lexeme) {
-            option.remove_tail();
+    pub fn back_path(&self, l: Option<&NonNull<Node<Lexeme>>>, option: &mut LexemePath) {
+        if let Some(lexeme) = l {
+            unsafe {
+                let lexeme = &lexeme.as_ref().val;
+                while option.check_cross(lexeme) {
+                    option.remove_tail();
+                }
+            }
         }
     }
 }

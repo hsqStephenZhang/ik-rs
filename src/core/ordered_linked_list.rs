@@ -76,7 +76,6 @@ impl<T: PartialOrd> OrderedLinkedList<T> {
         // Use box to help generate raw ptr
         let mut node = Box::new(Node::new(val));
         node.next = self.head;
-        node.prev = None;
         let node = NonNull::new(Box::into_raw(node));
 
         match self.head {
@@ -92,7 +91,6 @@ impl<T: PartialOrd> OrderedLinkedList<T> {
     fn push_back(&mut self, val: T) {
         // Use box to help generate raw ptr
         let mut node = Box::new(Node::new(val));
-        node.next = None;
         node.prev = self.tail;
         let node = NonNull::new(Box::into_raw(node));
 
@@ -213,19 +211,24 @@ impl<T: PartialOrd> OrderedLinkedList<T> {
                     Some(current) => {
                         if current.as_ref().val > data {
                             cur = current.as_ref().prev;
-                        }
-                        if current.as_ref().val == data {
+                        } else if current.as_ref().val == data {
                             // already exist, do nothing
                             return Ok(());
-                        }
-                        if current.as_ref().val < data {
+                        } else {
                             before_node = Some(current);
                             break; // find insert index
                         }
                     }
                 }
             }
-            // Create Node
+            debug_assert!(
+                before_node.is_some() && before_node.unwrap().as_ref().next.is_some(),
+                "the val to be insert is in the middle of list, there should be at least two nodes"
+            );
+            // create node by order
+            //
+            // before_node  -> splice_node -> after_node
+            //              <-             <-
             if let Some(mut before_node) = before_node {
                 let mut spliced_node = Box::new(Node::new(data));
                 let after_node = before_node.as_ref().next;
@@ -234,7 +237,7 @@ impl<T: PartialOrd> OrderedLinkedList<T> {
                 let spliced_node = NonNull::new(Box::into_raw(spliced_node));
                 // Insert Node
                 before_node.as_mut().next = spliced_node;
-                after_node.map(|mut n| n.as_mut().prev = spliced_node);
+                after_node.unwrap_unchecked().as_mut().prev = spliced_node;
                 self.length += 1;
             }
         }

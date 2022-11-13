@@ -184,10 +184,10 @@ mod test {
         trie.insert("申艳超".chars());
         trie.insert("blues小站".chars());
 
-        assert_eq!(false, trie.exist("Testing".chars()));
-        assert_eq!(true, trie.exist("Brown".chars()));
-        assert_eq!(true, trie.exist("申艳超".chars()));
-        assert_eq!(false, trie.exist("申超".chars()));
+        assert!(!trie.exist("Testing".chars()));
+        assert!(trie.exist("Brown".chars()));
+        assert!(trie.exist("申艳超".chars()));
+        assert!(!trie.exist("申超".chars()));
     }
 
     #[test]

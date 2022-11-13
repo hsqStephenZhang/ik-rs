@@ -49,22 +49,22 @@ impl PartialEq for Lexeme {
     }
 }
 
+impl Eq for Lexeme {}
+
 impl PartialOrd for Lexeme {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         // 起始位置优先
-        if self.begin < other.begin {
-            Some(Ordering::Less)
-        } else if self.begin == other.begin {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for Lexeme {
+    fn cmp(&self, other: &Self) -> Ordering {
+        match self.begin.cmp(&other.begin) {
+            Ordering::Less => Ordering::Less,
             // 词元长度优先
-            if self.length > other.length {
-                return Some(Ordering::Less);
-            } else if self.length == other.length {
-                return Some(Ordering::Equal);
-            } else {
-                return Some(Ordering::Greater);
-            }
-        } else {
-            return Some(Ordering::Greater);
+            Ordering::Equal => other.length.cmp(&self.length),
+            Ordering::Greater => Ordering::Greater,
         }
     }
 }

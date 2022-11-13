@@ -78,13 +78,14 @@ impl Tokenizer for IkTokenizer {
 mod tests {
     use crate::TokenMode;
 
+    const TEXT: &str =
+        "张华考上了北京大学；李萍进了中等技术学校；我在百货公司当售货员：我们都有光明的前途";
+
     #[test]
     fn tantivy_ik_works() {
         use tantivy::tokenizer::*;
         let tokenizer = crate::IkTokenizer::new(TokenMode::SEARCH);
-        let mut token_stream = tokenizer.token_stream(
-            "张华考上了北京大学；李萍进了中等技术学校；我在百货公司当售货员：我们都有光明的前途",
-        );
+        let mut token_stream = tokenizer.token_stream(TEXT);
         let mut tokens = Vec::new();
         let mut token_text = Vec::new();
         while let Some(token) = token_stream.next() {
@@ -114,6 +115,54 @@ mod tests {
                 "售货员",
                 "我们",
                 "都有",
+                "光明",
+                "的",
+                "前途"
+            ]
+        );
+    }
+
+    #[test]
+    fn t2() {
+        use tantivy::tokenizer::*;
+        let tokenizer = crate::IkTokenizer::new(TokenMode::INDEX);
+        let mut token_stream = tokenizer.token_stream(TEXT);
+        let mut token_text = Vec::new();
+        while let Some(token) = token_stream.next() {
+            token_text.push(token.text.clone());
+        }
+        assert_eq!(
+            token_text,
+            vec![
+                "张华",
+                "考上",
+                "上了",
+                "北京大学",
+                "北京大",
+                "北京",
+                "大学",
+                "李萍",
+                "进了",
+                "中等",
+                "技术学校",
+                "技术",
+                "学校",
+                "我",
+                "在",
+                "百货公司",
+                "百货",
+                "百",
+                "货",
+                "公司",
+                "当",
+                "售货员",
+                "售货",
+                "货员",
+                "我们",
+                "我",
+                "们",
+                "都有",
+                "有",
                 "光明",
                 "的",
                 "前途"

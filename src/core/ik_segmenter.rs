@@ -57,9 +57,7 @@ impl IKSegmenter {
         }
         let mut path_map;
         // 对分词进行歧义处理
-        unsafe {
-            path_map = self.arbitrator.process(&mut origin_lexemes, mode);
-        }
+        path_map = self.arbitrator.process(&mut origin_lexemes, mode);
         // 将分词结果输出到结果集，并处理未切分的单个CJK字符
         let mut results = self.output_to_result(&mut path_map, input);
         let mut final_results = Vec::new();

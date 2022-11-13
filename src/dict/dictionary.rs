@@ -219,7 +219,7 @@ mod test {
     fn test_dictionary() {
         let mut dictionary = Dictionary::default();
         let initialized = dictionary.load();
-        assert_eq!(true, initialized);
+        assert!(initialized);
         let words = vec!["abcd", "blues"];
         dictionary.add_words(words);
 
@@ -227,7 +227,7 @@ mod test {
         println!("{}", "一夕之间".to_string().len());
         for word in vec_exist {
             let hits = dictionary.match_in_main_dict(word);
-            assert_eq!(true, !hits.is_empty());
+            assert!(!hits.is_empty());
         }
     }
 }
