@@ -52,9 +52,7 @@ impl CnQuantifierSegmenter {
     // 处理数词
     pub fn process_cnumber(&mut self, input: &str) -> Vec<Lexeme> {
         let mut new_lexemes = Vec::new();
-        let char_count = utf8_len(input);
-        for cursor in 0..char_count {
-            let curr_char = input.char_indices().nth(cursor).unwrap().1;
+        for (cursor, curr_char) in input.chars().enumerate() {
             let curr_char_type = char_type_of(curr_char);
             if self.n_start == -1 && self.n_end == -1 {
                 // 初始状态
@@ -109,8 +107,7 @@ impl CnQuantifierSegmenter {
         // 判断是否需要启动量词扫描
         if self.need_count_scan() {
             let char_count = utf8_len(input);
-            for cursor in 0..char_count {
-                let curr_char = input.char_indices().nth(cursor).unwrap().1;
+            for (cursor, curr_char) in input.chars().enumerate() {
                 let curr_char_type = char_type_of(curr_char);
                 if CharType::CHINESE == curr_char_type {
                     let hit_options = GLOBAL_DICT.lock().unwrap().match_in_quantifier_dict(

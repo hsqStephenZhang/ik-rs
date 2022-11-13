@@ -54,9 +54,8 @@ pub fn regularize(input: char) -> char {
 }
 
 pub fn regularize_str(input: &str) -> String {
-    let chars: Vec<char> = input.chars().collect();
     let mut regular_str = "".to_string();
-    for c in chars {
+    for c in input.chars() {
         regular_str.push(regularize(c));
     }
     regular_str

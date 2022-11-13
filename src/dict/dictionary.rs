@@ -1,6 +1,7 @@
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::marker::Sync;
+use std::path::Path;
 use std::rc::Rc;
 use std::sync::Mutex;
 
@@ -9,6 +10,7 @@ use once_cell;
 use once_cell::sync::Lazy;
 
 use crate::config::configuration::Configuration;
+use crate::config::default_config::{DefaultConfig, IK_CONFIG_NAME};
 use crate::dict::hit::Hit;
 use crate::dict::trie::Trie;
 
@@ -20,7 +22,6 @@ pub static GLOBAL_DICT: Lazy<Mutex<Dictionary>> = Lazy::new(|| {
 
 type Dict = Trie;
 
-#[derive(Default)]
 /// Dictionary Manager
 pub struct Dictionary {
     // 主词典对象
@@ -31,6 +32,19 @@ pub struct Dictionary {
     quantifier_dict: Dict,
     // 配置文件
     cfg: Option<Rc<dyn Configuration>>,
+}
+
+impl Default for Dictionary{
+    fn default() -> Self {
+        let root_path = env!("CARGO_MANIFEST_DIR");
+        let conf_file_path = Path::new(root_path).join(IK_CONFIG_NAME);
+        Self{
+            main_dict: Dict::default(),
+            stop_word_dict:Dict::default(),
+            quantifier_dict:Dict::default(),
+            cfg: Some(Rc::new(DefaultConfig::new(conf_file_path)))
+        }
+    }
 }
 
 unsafe impl Sync for Dictionary {}

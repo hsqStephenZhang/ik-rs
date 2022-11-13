@@ -73,8 +73,7 @@ impl LetterSegmenter {
     pub fn process_mix_letter(&mut self, input: &str) -> Vec<Lexeme> {
         let mut new_lexemes = Vec::new();
         let char_count = utf8_len(input);
-        for cursor in 0..char_count {
-            let curr_char = input.char_indices().nth(cursor).unwrap().1;
+        for (cursor, curr_char) in input.chars().enumerate() {
             let curr_char_type = char_type_of(curr_char);
             if self.start == -1 {
                 // 当前的分词器尚未开始处理字符
@@ -124,8 +123,7 @@ impl LetterSegmenter {
     fn process_english_letter(&mut self, input: &str) -> Vec<Lexeme> {
         let mut new_lexemes = Vec::new();
         let char_count = utf8_len(input);
-        for cursor in 0..char_count {
-            let curr_char = input.char_indices().nth(cursor).unwrap().1;
+        for (cursor, curr_char) in input.chars().enumerate() {
             let curr_char_type = char_type_of(curr_char);
             if self.english_start == -1 {
                 // 当前的分词器尚未开始处理英文字符
@@ -172,8 +170,7 @@ impl LetterSegmenter {
     fn process_arabic_letter(&mut self, input: &str) -> Vec<Lexeme> {
         let mut new_lexemes = Vec::new();
         let char_count = utf8_len(input);
-        for cursor in 0..char_count {
-            let curr_char = input.chars().nth(cursor).unwrap();
+        for (cursor, curr_char) in input.chars().enumerate() {
             let curr_char_type = char_type_of(curr_char);
             if self.arabic_start == -1 {
                 // 当前的分词器尚未开始处理数字字符

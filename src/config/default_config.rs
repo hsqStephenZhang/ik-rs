@@ -11,7 +11,7 @@ use serde::{Deserialize, Serialize};
 use crate::config::configuration::Configuration;
 
 // 分词器配置文件路径
-const IK_CONFIG_NAME: &str = "ik.yml";
+pub const IK_CONFIG_NAME: &str = "ik.yml";
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DefaultConfig {
