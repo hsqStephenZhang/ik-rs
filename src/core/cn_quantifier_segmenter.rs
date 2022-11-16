@@ -154,10 +154,10 @@ impl CnQuantifierSegmenter {
                 while let Some(t) = last_node {
                     let l = &t.as_ref().val;
                     if l.lexeme_type == LexemeType::CNUM || l.lexeme_type == LexemeType::ARABIC {
-                        if l.get_begin() + l.get_length() == cursor {
-                            return true;
-                        } else if l.get_begin() + l.get_length() < cursor {
-                            break;
+                        match (l.get_begin() + l.get_length()).cmp(&cursor) {
+                            std::cmp::Ordering::Equal => return true,
+                            std::cmp::Ordering::Less => break,
+                            _ => {}
                         }
                     }
                     last_node = t.as_ref().prev.as_ref();

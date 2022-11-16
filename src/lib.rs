@@ -179,20 +179,6 @@ mod tests {
     }
 
     #[test]
-    fn test_letters() {
-        test_once(
-            "Lark Search 综搜质量小分队",
-            TokenMode::INDEX,
-            vec!["lark", "search", "综", "搜", "质量", "小分队", "分队"],
-        );
-        test_once(
-            "Lark Search 综搜质量小分队",
-            TokenMode::SEARCH,
-            vec!["lark", "search", "综", "搜", "质量", "小分队"],
-        );
-    }
-
-    #[test]
     fn test_regularize() {
         test_once("Ａｄｅ", TokenMode::INDEX, vec!["Ade"])
     }

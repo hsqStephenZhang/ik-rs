@@ -61,10 +61,10 @@ impl PartialOrd for Lexeme {
 impl Ord for Lexeme {
     fn cmp(&self, other: &Self) -> Ordering {
         match self.begin.cmp(&other.begin) {
-            Ordering::Less => Ordering::Less,
             // 词元长度优先
-            Ordering::Equal => other.length.cmp(&self.length),
+            Ordering::Less => Ordering::Less,
             Ordering::Greater => Ordering::Greater,
+            Ordering::Equal => other.length.cmp(&self.length),
         }
     }
 }

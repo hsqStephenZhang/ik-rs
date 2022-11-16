@@ -76,9 +76,8 @@ impl IKSegmenter {
                 origin_lexemes.insert(lexeme).expect("error!");
             }
         }
-        let mut path_map;
         // 对分词进行歧义处理
-        path_map = self.arbitrator.process(&mut origin_lexemes, mode);
+        let mut path_map = self.arbitrator.process(&mut origin_lexemes, mode);
         // 将分词结果输出到结果集，并处理未切分的单个CJK字符
         let mut results = self.output_to_result(&mut path_map, &chars);
         let mut final_results = Vec::new();
@@ -102,9 +101,9 @@ impl IKSegmenter {
     }
 
     /// 推送分词结果到结果集合
-    /// 1.从buff头部遍历到self.cursor已处理位置
-    /// 2.将map中存在的分词结果推入results
-    /// 3.将map中不存在的CJDK字符以单字方式推入results
+    /// 1. 从buff头部遍历到 self.cursor 已处理位置
+    /// 2. 将map中存在的分词结果推入 results
+    /// 3. 将map中不存在的 CJDK 字符以单字方式推入 results
     pub fn output_to_result(
         &mut self,
         path_map: &mut HashMap<usize, LexemePath>,

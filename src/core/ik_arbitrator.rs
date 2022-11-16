@@ -24,26 +24,30 @@ impl IKArbitrator {
         let mut path_map = HashMap::<usize, LexemePath>::new();
         let mut cross_path = LexemePath::new();
         let mut cur_node = org_lexemes.head_node();
+
+        let mut handle_once = |path_map: &mut HashMap<usize, LexemePath>,
+                           cross_path: LexemePath| {
+            if cross_path.size() == 1 || !(mode == TokenMode::SEARCH) {
+                // crossPath没有歧义 或者 不做歧义处理
+                // 直接输出当前crossPath
+                path_map.insert(cross_path.get_path_begin() as usize, cross_path);
+            } else {
+                // 对当前的crossPath进行歧义处理
+                let judge_result = self.judge(cross_path.get_head());
+                // 输出歧义处理结果judgeResult
+                path_map.insert(
+                    judge_result.as_ref().unwrap().get_path_begin() as usize,
+                    judge_result.unwrap(),
+                );
+            }
+        };
+
         while let Some(inner) = cur_node {
             // safety: we own the ordered linked list, so deref the NonNull node is safe
-            let org_lexeme = unsafe {
-                &(inner.as_ref().val)
-            };
+            let org_lexeme = unsafe { &(inner.as_ref().val) };
             if !cross_path.add_cross_lexeme(org_lexeme) {
                 // 找到与crossPath不相交的下一个crossPath
-                if cross_path.size() == 1 || !(mode == TokenMode::SEARCH) {
-                    // crossPath没有歧义 或者 不做歧义处理
-                    // 直接输出当前crossPath
-                    path_map.insert(cross_path.get_path_begin() as usize, cross_path);
-                } else {
-                    // 对当前的crossPath进行歧义处理
-                    let judge_result = self.judge(cross_path.get_head());
-                    // 输出歧义处理结果judgeResult
-                    path_map.insert(
-                        judge_result.as_ref().unwrap().get_path_begin() as usize,
-                        judge_result.unwrap(),
-                    );
-                }
+                handle_once(&mut path_map, cross_path);
                 // 把orgLexeme加入新的crossPath中
                 cross_path = LexemePath::new();
                 cross_path.add_cross_lexeme(org_lexeme);
@@ -55,19 +59,7 @@ impl IKArbitrator {
         }
 
         // 处理最后的path
-        if cross_path.size() == 1 || !(mode == TokenMode::SEARCH) {
-            // crossPath没有歧义 或者 不做歧义处理
-            // 直接输出当前crossPath
-            path_map.insert(cross_path.get_path_begin() as usize, cross_path);
-        } else {
-            // 对当前的crossPath进行歧义处理
-            let judge_result = self.judge(cross_path.get_head());
-            // 输出歧义处理结果judgeResult
-            path_map.insert(
-                judge_result.as_ref().unwrap().get_path_begin() as usize,
-                judge_result.unwrap(),
-            );
-        }
+        handle_once(&mut path_map, cross_path);
         path_map
     }
 
@@ -86,20 +78,18 @@ impl IKArbitrator {
         path_options.insert(option_path.clone());
         while let Some(c) = lexeme_stack.pop() {
             // rollback path
-            self.back_path(c, &mut option_path);
+            self.backward_path(c, &mut option_path);
             // forward path
             self.forward_path(c, &mut option_path);
             path_options.insert(option_path.clone());
         }
         // 返回集合中的最优方案
-        let mut a = None;
-        if let Some(o) = path_options.iter().next() {
-            a = Some(o.clone());
-        }
-        a
+        path_options.iter().next().cloned()
     }
 
     // 向前遍历，添加词元，构造一个无歧义词元组合
+    // option_path: 无歧义的路径
+    // ret: 歧义，待裁决的路径
     pub fn forward_path<'a>(
         &'a self,
         cur_node: Option<&'a NonNull<Node<Lexeme>>>,
@@ -124,7 +114,7 @@ impl IKArbitrator {
     }
 
     // 回滚词元链，直到它能够接受指定的词元
-    pub fn back_path(&self, l: Option<&NonNull<Node<Lexeme>>>, option: &mut LexemePath) {
+    pub fn backward_path(&self, l: Option<&NonNull<Node<Lexeme>>>, option: &mut LexemePath) {
         if let Some(lexeme) = l {
             unsafe {
                 let lexeme = &lexeme.as_ref().val;

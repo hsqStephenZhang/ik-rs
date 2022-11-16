@@ -33,7 +33,10 @@ impl LexemePath {
     }
 
     // 向LexemePath追加相交的Lexeme
+    // 应当针按照 Lexeme 的顺序依次调用此函数
+    // 如果 lexeme 和 lexeme_list 没有冲突，则不添加到 lexeme_list 中， 否则将更新 lexeme_list
     pub fn add_cross_lexeme(&mut self, lexeme: &Lexeme) -> bool {
+        // lexeme_list 为空
         if self.lexeme_list.is_empty() {
             self.lexeme_list
                 .insert(lexeme.clone())
@@ -43,6 +46,7 @@ impl LexemePath {
             self.payload_length += lexeme.get_length();
             true
         } else if self.check_cross(lexeme) {
+            // 当前 lexeme 和 lexeme_list 冲突
             self.lexeme_list
                 .insert(lexeme.clone())
                 .expect("add cross lexeme error!");
@@ -189,34 +193,29 @@ impl Ord for LexemePath {
 }
 
 impl PartialOrd<Self> for LexemePath {
-    fn partial_cmp(&self, o: &Self) -> Option<Ordering> {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         // 比较有效文本长度
-        if self.payload_length > o.payload_length {
-            return Some(Ordering::Less);
-        } else if self.payload_length < o.payload_length {
-            return Some(Ordering::Greater);
-        } else if self.size() < o.size() {
-            return Some(Ordering::Less);
-        } else if self.size() > o.size() {
-            return Some(Ordering::Greater);
-        } else if self.get_path_length() > o.get_path_length() {
-            return Some(Ordering::Less);
-        } else if self.get_path_length() < o.get_path_length() {
-            return Some(Ordering::Greater);
-        } else if self.path_end > o.path_end {
-            return Some(Ordering::Less);
-        } else if self.path_end < o.path_end {
-            return Some(Ordering::Greater);
-        } else if self.get_xweight() > o.get_xweight() {
-            return Some(Ordering::Less);
-        } else if self.get_xweight() < o.get_xweight() {
-            return Some(Ordering::Greater);
-        } else if self.get_pweight() > o.get_pweight() {
-            return Some(Ordering::Less);
-        } else if self.get_pweight() < o.get_pweight() {
-            return Some(Ordering::Greater);
-        }
-        Some(Ordering::Equal)
+        Some(match self.payload_length.cmp(&other.payload_length) {
+            Ordering::Less => Ordering::Greater,
+            Ordering::Greater => Ordering::Less,
+            Ordering::Equal => match self.size().cmp(&other.size()) {
+                Ordering::Less => Ordering::Less,
+                Ordering::Greater => Ordering::Greater,
+                Ordering::Equal => match self.get_path_length().cmp(&other.get_path_length()) {
+                    Ordering::Less => Ordering::Greater,
+                    Ordering::Greater => Ordering::Less,
+                    Ordering::Equal => match self.path_end.cmp(&other.path_end) {
+                        Ordering::Less => Ordering::Greater,
+                        Ordering::Greater => Ordering::Less,
+                        Ordering::Equal => match self.get_xweight().cmp(&other.get_xweight()) {
+                            Ordering::Less => Ordering::Greater,
+                            Ordering::Greater => Ordering::Less,
+                            Ordering::Equal => other.get_pweight().cmp(&self.get_pweight()),
+                        },
+                    },
+                },
+            },
+        })
     }
 }
 
