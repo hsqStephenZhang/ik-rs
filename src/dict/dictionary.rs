@@ -107,7 +107,7 @@ impl Dictionary {
             .stop_word_dict
             .match_word_with_offset(word.into_iter(), offset, length);
         for hit in hits.iter() {
-            if hit.is_match() {
+            if hit.is_match() && hit.begin == offset && hit.end == offset + length - 1 {
                 return true;
             }
         }

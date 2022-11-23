@@ -273,4 +273,9 @@ mod tests {
     fn test_full5() {
         test_once("一两天", TokenMode::INDEX, vec!["一两", "两天", "两", "天"]);
     }
+
+    #[test]
+    fn test_stop_word() {
+        test_once("is：issue：feed", TokenMode::INDEX, vec!["issue", "feed"]);
+    }
 }
