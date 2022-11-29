@@ -18,11 +18,12 @@ pub static GLOBAL_IK: Lazy<Mutex<IKSegmenter>> = Lazy::new(|| {
     Mutex::new(ik)
 });
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct IkTokenizer {
     mode: TokenMode,
 }
 
+#[derive(Debug, Clone)]
 pub struct IkTokenStream {
     tokens: Vec<Token>,
     index: usize,
@@ -271,7 +272,11 @@ mod tests {
     #[test]
     #[should_panic]
     fn test_full5() {
-        test_once("一两天", TokenMode::INDEX, vec!["一两", "两天", "两", "天"]);
+        test_once(
+            "本地搜索特征工程二期技术评审",
+            TokenMode::INDEX,
+            vec!["一两", "两天", "两", "天"],
+        );
     }
 
     #[test]

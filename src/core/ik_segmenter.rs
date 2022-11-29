@@ -11,7 +11,7 @@ use crate::core::ordered_linked_list::OrderedLinkedList;
 use crate::core::segmentor::Segmenter;
 use crate::dict::dictionary::GLOBAL_DICT;
 
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum TokenMode {
     INDEX,
     SEARCH,
