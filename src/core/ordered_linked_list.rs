@@ -500,7 +500,7 @@ impl<T: PartialOrd> Drop for IntoIter<T> {
         // buffer will clean itself up afterwards.
         for _ in &mut *self {}
 
-        log::debug!("IntoIter has been dropped!")
+        log::trace!("IntoIter has been dropped!")
     }
 }
 

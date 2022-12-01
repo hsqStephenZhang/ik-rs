@@ -39,10 +39,12 @@ impl Segmenter for LetterSegmenter {
         let b = self.process_arabic_letter(input);
         // 处理混合字母(这个要放最后处理，可以通过QuickSortSet排除重复)
         let c = self.process_mix_letter(input);
-        let mut new_lexemes = Vec::with_capacity(a.len() + b.len() + c.len());
+        let d = self.process_special_letter(input);
+        let mut new_lexemes = Vec::with_capacity(a.len() + b.len() + c.len() + d.len());
         new_lexemes.extend(a);
         new_lexemes.extend(b);
         new_lexemes.extend(c);
+        new_lexemes.extend(d);
         new_lexemes
     }
     fn name(&self) -> &str {
@@ -210,6 +212,19 @@ impl LetterSegmenter {
             new_lexemes.push(new_lexeme);
             self.arabic_start = -1;
             self.arabic_end = -1;
+        }
+        new_lexemes
+    }
+
+    pub fn process_special_letter(&mut self, chars: &[char]) -> Vec<Lexeme> {
+        let mut new_lexemes = vec![];
+
+        for (cursor, curr_char) in chars.iter().enumerate() {
+            let curr_char_type = char_type_of(curr_char);
+            if curr_char_type == CharType::SPECIAL {
+                let new_lexeme = Lexeme::new(0, cursor, 1, LexemeType::SPECIAL);
+                new_lexemes.push(new_lexeme);
+            }
         }
         new_lexemes
     }

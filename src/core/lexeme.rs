@@ -25,6 +25,8 @@ pub enum LexemeType {
     COUNT,
     // 中文数量词48
     CQUAN,
+    // 扩展，特殊字符
+    SPECIAL
 }
 
 /// IK词元对象

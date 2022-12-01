@@ -1,13 +1,63 @@
+use phf::{phf_set, Set};
 use unicode_blocks;
 
 #[derive(Debug, PartialEq)]
 pub enum CharType {
     USELESS,
+    SPECIAL,
     ARABIC,
     ENGLISH,
     CHINESE,
     OtherCjk,
 }
+
+static SPECIAL_CHARS: Set<char> = phf_set! {
+    // 英文特殊字符
+    '!',
+    '"',
+    '#',
+    '$',
+    '%',
+    '&',
+    '(',
+    ')',
+    '+',
+    ',',
+    '-',
+    '/',
+    ';',
+    '<',
+    '=',
+    '>',
+    '?',
+    '@',
+    '[',
+    '\\',
+    ']',
+    '^',
+    '`',
+    '{',
+    '|',
+    '}',
+    '~',
+    '¥',
+    // 中文特殊字符
+    '、',
+    '。',
+    '《',
+    '》',
+    '「',
+    '」',
+    '【',
+    '】',
+    '！',
+    '（',
+    '）',
+    '，',
+    '；',
+    '？',
+    '～',
+};
 
 // identify CharType Of char
 pub fn char_type_of(input: &char) -> CharType {
@@ -15,6 +65,8 @@ pub fn char_type_of(input: &char) -> CharType {
         return CharType::ARABIC;
     } else if ('a'..='z').contains(input) || ('A'..='Z').contains(input) {
         return CharType::ENGLISH;
+    } else if SPECIAL_CHARS.contains(input) {
+        return CharType::SPECIAL;
     } else {
         let ub = unicode_blocks::find_unicode_block(*input).unwrap();
         if ub == unicode_blocks::CJK_UNIFIED_IDEOGRAPHS

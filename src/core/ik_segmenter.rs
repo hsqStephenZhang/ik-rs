@@ -70,7 +70,7 @@ impl IKSegmenter {
         // 遍历子分词器
         let mut origin_lexemes = OrderedLinkedList::new();
         for segmenter in self.segmenters.iter_mut() {
-            log::debug!("sub segmenter->{}", segmenter.name());
+            log::trace!("sub segmenter->{}", segmenter.name());
             let lexemes = segmenter.analyze(&chars);
             for lexeme in lexemes {
                 origin_lexemes.insert(lexeme).expect("error!");
