@@ -72,16 +72,6 @@ impl TextAnalyzer {
     /// The method consumes the current `TokenStream` and returns a
     /// new one.
     ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use tantivy::tokenizer::*;
-    ///
-    /// let en_stem = TextAnalyzer::from(SimpleTokenizer)
-    ///     .filter(RemoveLongFilter::limit(40))
-    ///     .filter(LowerCaser)
-    ///     .filter(Stemmer::default());
-    /// ```
     #[must_use]
     pub fn filter<F: Into<BoxTokenFilter>>(mut self, token_filter: F) -> Self {
         self.token_filters.push(token_filter.into());
@@ -199,31 +189,6 @@ impl<T: TokenFilter> From<T> for BoxTokenFilter {
 /// `TokenStream` is the result of the tokenization.
 ///
 /// It consists consumable stream of `Token`s.
-///
-/// # Example
-///
-/// ```
-/// use tantivy::tokenizer::*;
-///
-/// let tokenizer = TextAnalyzer::from(SimpleTokenizer)
-///        .filter(RemoveLongFilter::limit(40))
-///        .filter(LowerCaser);
-/// let mut token_stream = tokenizer.token_stream("Hello, happy tax payer");
-/// {
-///     let token = token_stream.next().unwrap();
-///     assert_eq!(&token.text, "hello");
-///     assert_eq!(token.offset_from, 0);
-///     assert_eq!(token.offset_to, 5);
-///     assert_eq!(token.position, 0);
-/// }
-/// {
-///     let token = token_stream.next().unwrap();
-///     assert_eq!(&token.text, "happy");
-///     assert_eq!(token.offset_from, 7);
-///     assert_eq!(token.offset_to, 12);
-///     assert_eq!(token.position, 1);
-/// }
-/// ```
 pub trait TokenStream {
     /// Advance to the next token
     ///
@@ -239,18 +204,6 @@ pub trait TokenStream {
     /// Helper to iterate over tokens. It
     /// simply combines a call to `.advance()`
     /// and `.token()`.
-    ///
-    /// ```
-    /// use tantivy::tokenizer::*;
-    ///
-    /// let tokenizer = TextAnalyzer::from(SimpleTokenizer)
-    ///       .filter(RemoveLongFilter::limit(40))
-    ///       .filter(LowerCaser);
-    /// let mut token_stream = tokenizer.token_stream("Hello, happy tax payer");
-    /// while let Some(token) = token_stream.next() {
-    ///     println!("Token {:?}", token.text);
-    /// }
-    /// ```
     fn next(&mut self) -> Option<&Token> {
         if self.advance() {
             Some(self.token())
