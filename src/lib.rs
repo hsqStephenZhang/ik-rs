@@ -4,14 +4,15 @@ pub mod config;
 pub mod core;
 #[allow(dead_code)]
 pub mod dict;
+pub mod tokenizer;
 
 use std::sync::Mutex;
 
 use once_cell::sync::Lazy;
-use tantivy::tokenizer::{BoxTokenStream, Token, TokenStream, Tokenizer};
 
 use crate::core::char_util::regularize_str;
 use crate::core::ik_segmenter::{IKSegmenter, TokenMode};
+use crate::tokenizer::{BoxTokenStream, Token, TokenStream, Tokenizer};
 
 pub static GLOBAL_IK: Lazy<Mutex<IKSegmenter>> = Lazy::new(|| {
     let ik = IKSegmenter::new();
@@ -80,10 +81,10 @@ impl Tokenizer for IkTokenizer {
 
 #[cfg(test)]
 mod tests {
+    use crate::tokenizer::Tokenizer;
     use crate::TokenMode;
 
     fn test_once(text: &str, mode: TokenMode, expect_tokens: Vec<&str>) {
-        use tantivy::tokenizer::*;
         let tokenizer = crate::IkTokenizer::new(mode);
         let mut token_stream = tokenizer.token_stream(text);
         let mut token_text = Vec::new();
@@ -289,7 +290,7 @@ mod tests {
     #[test]
     fn test_full6() {
         test_once(
-            "【特征技术评审】",
+            "is【特征技术评审】",
             TokenMode::INDEX,
             vec!["【", "特征", "技术", "评审", "】"],
         );

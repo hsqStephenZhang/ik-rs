@@ -2,8 +2,8 @@ use std::fs::{File, OpenOptions};
 use std::io::{self, BufRead, LineWriter, Write};
 
 use ik_rs::core::ik_segmenter::TokenMode;
+use ik_rs::tokenizer::*;
 use ik_rs::IkTokenizer;
-use tantivy::tokenizer::*;
 
 pub fn tokenize_text(text: &str, mode: TokenMode) -> Vec<String> {
     let tokenizer = IkTokenizer::new(mode);
