@@ -1,4 +1,6 @@
-use phf::{phf_set, Set};
+use std::collections::HashSet;
+
+use lazy_static::lazy_static;
 use unicode_blocks;
 
 #[derive(Debug, PartialEq)]
@@ -11,53 +13,21 @@ pub enum CharType {
     OtherCjk,
 }
 
-static SPECIAL_CHARS: Set<char> = phf_set! {
-    // 英文特殊字符
-    '!',
-    '"',
-    '#',
-    '$',
-    '%',
-    '&',
-    '(',
-    ')',
-    '+',
-    ',',
-    '-',
-    '/',
-    ';',
-    '<',
-    '=',
-    '>',
-    '?',
-    '@',
-    '[',
-    '\\',
-    ']',
-    '^',
-    '`',
-    '{',
-    '|',
-    '}',
-    '~',
-    '¥',
-    // 中文特殊字符
-    '、',
-    '。',
-    '《',
-    '》',
-    '「',
-    '」',
-    '【',
-    '】',
-    '！',
-    '（',
-    '）',
-    '，',
-    '；',
-    '？',
-    '～',
-};
+pub const R: [char; 43] = [
+    '!', '"', '#', '$', '%', '&', '(', ')', '+', ',', '-', '/', ';', '<', '=', '>', '?', '@', '[',
+    '\\', ']', '^', '`', '{', '|', '}', '~', '¥', // 中文特殊字符
+    '、', '。', '《', '》', '「', '」', '【', '】', '！', '（', '）', '，', '；', '？', '～',
+];
+
+lazy_static! {
+    static ref SPECIAL_CHARS: HashSet<char> = {
+        let mut m = HashSet::new();
+        for &c in &R {
+            m.insert(c);
+        }
+        m
+    };
+}
 
 // identify CharType Of char
 pub fn char_type_of(input: &char) -> CharType {
