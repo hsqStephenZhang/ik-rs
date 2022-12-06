@@ -212,7 +212,6 @@ dependencies = [
  "log",
  "once_cell",
  "serde",
- "serde_derive",
  "unicode-blocks",
 ]
 
