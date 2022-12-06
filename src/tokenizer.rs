@@ -15,6 +15,13 @@ pub struct Token {
     /// The text that generated the token should be obtained by
     /// &text[token.offset_from..token.offset_to]
     pub offset_to: usize,
+    /// Offset (byte index) of the first character of the token.
+    /// Offsets shall not be modified by token filters.
+    pub char_offset_from: usize,
+    /// Offset (byte index) of the last character of the token + 1.
+    /// The text that generated the token should be obtained by
+    /// &text[token.offset_from..token.offset_to]
+    pub char_offset_to: usize,
     /// Position, expressed in number of tokens.
     pub position: usize,
     /// Actual text content of the token.
@@ -28,6 +35,8 @@ impl Default for Token {
         Token {
             offset_from: 0,
             offset_to: 0,
+            char_offset_from: 0,
+            char_offset_to: 0,
             position: usize::max_value(),
             text: String::with_capacity(200),
             position_length: 1,
@@ -71,7 +80,6 @@ impl TextAnalyzer {
     ///
     /// The method consumes the current `TokenStream` and returns a
     /// new one.
-    ///
     #[must_use]
     pub fn filter<F: Into<BoxTokenFilter>>(mut self, token_filter: F) -> Self {
         self.token_filters.push(token_filter.into());
@@ -277,6 +285,8 @@ mod test {
             position: 1,
             offset_from: 2,
             offset_to: 3,
+            char_offset_from: 2,
+            char_offset_to: 3,
             text: "abc".to_string(),
             position_length: 1,
         };
