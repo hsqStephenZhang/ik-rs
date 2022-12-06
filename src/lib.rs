@@ -1,6 +1,4 @@
 #[allow(dead_code)]
-pub mod config;
-#[allow(dead_code)]
 pub mod core;
 #[allow(dead_code)]
 pub mod dict;

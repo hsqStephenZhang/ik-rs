@@ -1,16 +1,14 @@
-use std::fs::File;
-use std::io::{BufRead, BufReader};
 use std::marker::Sync;
-use std::path::Path;
-use std::rc::Rc;
 use std::sync::Mutex;
 
 #[warn(unused_imports)]
 use once_cell;
 use once_cell::sync::Lazy;
 
-use crate::config::configuration::Configuration;
-use crate::config::default_config::{DefaultConfig, IK_CONFIG_NAME};
+static DEFAULT_MAIN_DICT: &str = include_str!("../../dict/main2012.dic");
+static DEFAULT_QUANTIFIER_DICT: &str = include_str!("../../dict/quantifier.dic");
+static DEFAULT_STOPWORD_DICT: &str = include_str!("../../dict/stopword.dic");
+
 use crate::dict::hit::Hit;
 use crate::dict::trie::Trie;
 
@@ -30,19 +28,14 @@ pub struct Dictionary {
     stop_word_dict: Dict,
     // 量词词典
     quantifier_dict: Dict,
-    // 配置文件
-    cfg: Option<Rc<dyn Configuration>>,
 }
 
 impl Default for Dictionary {
     fn default() -> Self {
-        let root_path = env!("CARGO_MANIFEST_DIR");
-        let conf_file_path = Path::new(root_path).join(IK_CONFIG_NAME);
         Self {
             main_dict: Dict::default(),
             stop_word_dict: Dict::default(),
             quantifier_dict: Dict::default(),
-            cfg: Some(Rc::new(DefaultConfig::new(conf_file_path))),
         }
     }
 }
@@ -116,104 +109,38 @@ impl Dictionary {
 
     // 加载主词典及扩展词典
     fn load_main_dict(&mut self) -> bool {
-        let main_dict_path = self.cfg.as_ref().unwrap().as_ref().get_main_dictionary();
-        // 读取主词典文件
-        let file = File::open(main_dict_path).expect("Open main_dict error!");
-        let reader = BufReader::new(file);
+        let dict = DEFAULT_MAIN_DICT.split("\n");
         let mut total: usize = 0;
-        for line in reader.lines() {
-            match line {
-                Ok(word) => {
-                    self.main_dict.insert(word.trim().chars());
-                    total += 1;
-                }
-                Err(e) => {
-                    panic!("main dict read error:{}", e);
-                }
-            }
+        for line in dict {
+            self.main_dict.insert(line.trim().chars());
+            total += 1;
         }
-        log::trace!("load main_dict size = {}", total);
-        // 加载扩展词典
-        self.load_ext_dict()
-    }
-
-    // 加载用户配置的扩展词典到主词库表
-    fn load_ext_dict(&mut self) -> bool {
-        let ext_dict_files = self.cfg.as_ref().unwrap().get_ext_dictionaries();
-        let mut total = 0;
-        for ext_dict_file in ext_dict_files {
-            let file = File::open(ext_dict_file).expect("open error");
-            let reader = BufReader::new(file);
-            for line in reader.lines() {
-                match line {
-                    Ok(word) => {
-                        self.main_dict.insert(word.trim().chars());
-                        total += 1;
-                    }
-                    Err(e) => {
-                        panic!("ext dict read error:{}", e);
-                    }
-                }
-            }
-        }
-        log::trace!("ext dict total size = {}", total);
+        log::trace!("load main dict size = {}", total);
         true
     }
 
-    // 加载用户扩展的停止词词典
+    // 加载停用词词典
     fn load_stop_word_dict(&mut self) -> bool {
-        // 加载扩展停止词典
-        let ext_stop_word_dict_files = self
-            .cfg
-            .as_ref()
-            .unwrap()
-            .as_ref()
-            .get_ext_stop_word_dictionaries();
-        let mut total = 0_usize;
-        for stop_file in ext_stop_word_dict_files {
-            log::trace!("{}", stop_file);
-            let file = File::open(stop_file).expect("open error");
-            let reader = BufReader::new(file);
-            for line in reader.lines() {
-                match line {
-                    Ok(word) => {
-                        self.stop_word_dict.insert(word.trim().chars());
-                        total += 1;
-                    }
-                    Err(e) => {
-                        panic!("stop dict read error:{}", e);
-                    }
-                }
-            }
+        let dict = DEFAULT_STOPWORD_DICT.split("\n");
+        let mut total: usize = 0;
+        for line in dict {
+            self.stop_word_dict.insert(line.trim().chars());
+            total += 1;
         }
-        log::trace!("stop dict total size = {}", total);
+        log::trace!("load stopword dict size = {}", total);
         true
     }
 
     // 加载量词词典
     fn load_quantifier_dict(&mut self) -> bool {
         // 建立一个量词典实例
-        let file_path = self
-            .cfg
-            .as_ref()
-            .unwrap()
-            .as_ref()
-            .get_quantifier_dictionary();
-        let file = File::open(&file_path[..]).expect("open error");
-        let reader = BufReader::new(file);
-        let mut total = 0_usize;
-        for line in reader.lines() {
-            match line {
-                Ok(word) => {
-                    self.quantifier_dict.insert(word.trim().chars());
-                    total += 1;
-                }
-                Err(e) => {
-                    panic!("quantifier dict read error:{}", e);
-                }
-            }
+        let dict = DEFAULT_QUANTIFIER_DICT.split("\n");
+        let mut total: usize = 0;
+        for line in dict {
+            self.quantifier_dict.insert(line.trim().chars());
+            total += 1;
         }
-        log::trace!("quantifier_dict total size = {}", total);
+        log::trace!("load quantifier dict size = {}", total);
         true
     }
 }
