@@ -1,13 +1,31 @@
+use std::io::Read;
 use std::marker::Sync;
 use std::sync::Mutex;
 
+use flate2::read::GzDecoder;
+use lazy_static::lazy_static;
 #[warn(unused_imports)]
 use once_cell;
 use once_cell::sync::Lazy;
 
-static DEFAULT_MAIN_DICT: &str = include_str!("../../dict/main2012.dic");
+#[cfg(feature = "default-dict-compress")]
+static DEFAULT_MAIN_DICT_COMPRESSED: &[u8; 1129817] = include_bytes!("../../dict/main2012.dic.gz");
+
+#[cfg(not(feature = "default-dict-compress"))]
+static DEFAULT_MAIN_DICT_UNCOMPRESSED: &str = include_str!("../../dict/main2012.dic");
 static DEFAULT_QUANTIFIER_DICT: &str = include_str!("../../dict/quantifier.dic");
 static DEFAULT_STOPWORD_DICT: &str = include_str!("../../dict/stopword.dic");
+
+#[cfg(feature = "default-dict-compress")]
+lazy_static! {
+    static ref DEFAULT_MAIN_DICT: String = {
+        let compressed_bytes = &DEFAULT_MAIN_DICT_COMPRESSED[0..DEFAULT_MAIN_DICT_COMPRESSED.len()];
+        let mut gz = GzDecoder::new(&compressed_bytes[..]);
+        let mut content = String::new();
+        gz.read_to_string(&mut content).expect("decompress error");
+        content
+    };
+}
 
 use crate::dict::hit::Hit;
 use crate::dict::trie::Trie;
@@ -108,6 +126,19 @@ impl Dictionary {
     }
 
     // 加载主词典及扩展词典
+    #[cfg(not(feature = "default-dict-compress"))]
+    fn load_main_dict(&mut self) -> bool {
+        let dict = DEFAULT_MAIN_DICT.split("\n");
+        let mut total: usize = 0;
+        for line in dict {
+            self.main_dict.insert(line.trim().chars());
+            total += 1;
+        }
+        log::trace!("load main dict size = {}", total);
+        true
+    }
+
+    #[cfg(feature = "default-dict-compress")]
     fn load_main_dict(&mut self) -> bool {
         let dict = DEFAULT_MAIN_DICT.split("\n");
         let mut total: usize = 0;
